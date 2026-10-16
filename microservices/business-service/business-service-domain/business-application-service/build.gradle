@@ -1,0 +1,20 @@
+plugins {
+    id 'spring-common-conventions'
+}
+
+group = 'kh.edu.istad'
+version = 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api project(':business-service-domain')
+    api 'io.projectreactor:reactor-core'
+    implementation 'org.springframework:spring-context'
+}
+
+test {
+    useJUnitPlatform()
+}

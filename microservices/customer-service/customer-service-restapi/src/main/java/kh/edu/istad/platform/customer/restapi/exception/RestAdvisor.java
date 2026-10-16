@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
-public class RestAdvisor extends ResponseEntityExceptionHandler {
+public class  RestAdvisor extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CustomerNotFoundException.class)
     public ProblemDetail handleCustomerNotFound(

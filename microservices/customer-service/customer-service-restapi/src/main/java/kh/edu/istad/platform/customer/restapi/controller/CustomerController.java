@@ -2,24 +2,25 @@ package kh.edu.istad.platform.customer.restapi.controller;
 
 
 import jakarta.validation.Valid;
-import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
 import kh.edu.istad.platform.customer.domain.dto.UpdateCustomerCommand;
+import kh.edu.istad.platform.customer.domain.event.CustomerDeactivatedEvent;
 import kh.edu.istad.platform.customer.domain.usecase.DeactivateCustomerUseCase;
-import kh.edu.istad.platform.customer.domain.usecase.GetAllCustomersUseCase;
-import kh.edu.istad.platform.customer.domain.usecase.InitiateCustomerUseCase;
 import kh.edu.istad.platform.customer.domain.usecase.UpdateCustomerUseCase;
 import kh.edu.istad.platform.customer.restapi.dto.*;
 import kh.edu.istad.platform.customer.restapi.mapper.CustomerWebMapper;
+import kh.edu.istad.platform.customer.domain.dto.InitiateCustomerResult;
+import kh.edu.istad.platform.customer.domain.usecase.InitiateCustomerUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+import kh.edu.istad.platform.customer.domain.usecase.GetAllCustomersUseCase;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springdoc.core.annotations.ParameterObject;
-
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,14 +40,7 @@ public class CustomerController {
             Pageable pageable
     ){
         var customers = getAllCustomersUseCase.execute(pageable);
-        var responses = customers.map(customer -> new CustomerResponse(
-                customer.getId().id(),
-                customer.getUsername(),
-                customer.getFamilyName(),
-                customer.getGivenName(),
-                customer.getEmail().email(),
-                customer.getPhoneNumber().phoneNumber()
-        ));
+        var responses = customers.map(customerWebMapper::toResponse);
 
         return new PagedModel<>(responses);
     }
@@ -62,21 +56,15 @@ public class CustomerController {
     public CustomerUpdateResponse updateCustomer(
             @PathVariable ("customerId") UUID customerId,
             @Valid @RequestBody CustomerUpdateRequest customerUpdateRequest
-    ){
-        var command = new UpdateCustomerCommand(
-                customerId,
-                customerUpdateRequest.familyName(),
-                customerUpdateRequest.givenName()
+    ) {
+        var command = customerWebMapper.toUpdateCommand(
+                customerUpdateRequest,
+                customerId
         );
 
         var event = updateCustomerUseCase.execute(command);
-        var customer = event.getCustomer();
 
-        return new CustomerUpdateResponse(
-                customer.getId().id(),
-                customer.getFamilyName(),
-                customer.getGivenName()
-        );
+        return customerWebMapper.toUpdateResponse(event);
     }
 
     @PatchMapping("/{customerId}/deactivate")
@@ -85,10 +73,7 @@ public class CustomerController {
     ){
         var event = deactivateCustomerUseCase.execute(customerId);
 
-        return new CustomerDeactivateResponse(
-                event.getCustomerId().id(),
-                event.getDeactivatedAt()
-        );
+        return customerWebMapper.toDeactivateResponse(event);
     }
 
 }

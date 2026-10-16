@@ -1,0 +1,9 @@
+server:
+  port: 9092
+spring:
+  config:
+    import: "file:./.env[.properties]"
+  application:
+    name: business-service
+  mongodb:
+    uri: ${BUSINESS_MONGODB_URI}
