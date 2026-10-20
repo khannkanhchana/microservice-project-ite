@@ -19,8 +19,8 @@ public interface CustomerWebMapper {
     CustomerInitiateResponse toResponse(InitiateCustomerResult result);
 
     @Mapping(target = "customerId", source = "id.id")
-    @Mapping(target = "email", source = "email.value")
-    @Mapping(target = "phoneNumber", source = "phoneNumber.value")
+    @Mapping(target = "email", source = "email.email")
+    @Mapping(target = "phoneNumber", source = "phoneNumber.phoneNumber")
     CustomerResponse toResponse(Customer customer);
 
     @Mapping(target = "customerId", source = "customer.id.id")
