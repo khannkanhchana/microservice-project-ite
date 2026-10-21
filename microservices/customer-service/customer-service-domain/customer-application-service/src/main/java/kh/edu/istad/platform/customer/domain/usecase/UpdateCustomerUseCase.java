@@ -19,7 +19,7 @@ public class UpdateCustomerUseCase {
 
     public CustomerUpdatedEvent execute(UpdateCustomerCommand command) {
 
-        // 1. Load the existing customer
+
         Customer customer = customerRepository.findById(
                         new CustomerId(command.customerId())
                 )
@@ -27,17 +27,16 @@ public class UpdateCustomerUseCase {
                         () -> new CustomerNotFoundException(command.customerId())
                 );
 
-        // 2. Update customer and create domain event
+
         CustomerUpdatedEvent event = customerDomainService.updateCustomer(
                 customer,
                 command.familyName(),
                 command.givenName()
         );
 
-        // 3. Save the updated customer
+
         customerRepository.save(customer);
 
-        // 4. Return the domain event
         return event;
     }
 }

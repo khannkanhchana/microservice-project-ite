@@ -1,10 +1,7 @@
 spring:
+  mongodb:
+    uri: url :mongodb+srv://<db_username>:Kanh11112222@cluster0.evakvla.mongodb.net/business_db?retryWrites=true&w=majority
   application:
     name: payment-service
-  datasource:
-    url: jdbc:postgresql://localhost:5432/mongo-customer_db
-    username: postgres
-    password: 111999
-    driver-class-name: org.postgresql.Driver
 server:
   port: 9093

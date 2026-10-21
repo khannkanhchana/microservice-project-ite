@@ -6,7 +6,7 @@ import kh.edu.istad.platform.payment.domain.service.*;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 
-/** Application boundary for the assignment's payment domain; no transport is prescribed. */
+
 public class ProcessPaymentUseCase {
     private final PaymentDomainService service;
     private final Clock clock;

@@ -5,7 +5,7 @@ import kh.edu.istad.platform.business.domain.valueobject.*;
 
 import java.util.*;
 
-/** Aggregate root. Product quantities in the catalog represent available stock. */
+
 public record Business(BusinessId id, BusinessName name, BusinessContact contact,
                        boolean active, List<Product> products) {
     public Business {

@@ -6,11 +6,10 @@ import kh.edu.istad.platform.customer.domain.entity.Customer;
 import java.time.ZonedDateTime;
 
 
-// <> whole name of aggregate(customer)
-// event have happened not correct again
+
 public class CustomerInitiatedEvent implements DomainEvent<Customer> {
     private final Customer customer;
-    private final ZonedDateTime initiatedAt; // time when event happened
+    private final ZonedDateTime initiatedAt;
 
 
     public Customer getCustomer() {

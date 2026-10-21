@@ -22,10 +22,9 @@ public class InitiateCustomerUseCase {
     private final CustomerRepository customerRepository;
     public InitiateCustomerResult execute(InitiateCustomerCommand command){
         log.info("initiatete customer usecase:{}", command);
-        // validate by load data from persistence (Output port)
 
-        // TODO : Note for my self
-        //1. Build the domain customer from the request data
+
+
         Customer customer = Customer.Builder.builder()
                 .username(command.username())
                 .familyName(command.familyName())
@@ -34,16 +33,13 @@ public class InitiateCustomerUseCase {
                 .phoneNumber(new PhoneNumber(command.phoneNumber()))
                 .build();
 
-        // 2. Generate the Customer ID and set status to ACTIVE
+
         customerDomainService.initiateCustomer(customer);
 
 
-        // 3. Store the customer in the in memory-map Map that has been created already
         Customer saveCustomer = customerRepository.save(customer);
 
 
-        // invoke domain logic (called domain service)
-        // save data into database (output port)
         return new InitiateCustomerResult(
                 saveCustomer.getId().id(),
                 saveCustomer.getUsername(),
