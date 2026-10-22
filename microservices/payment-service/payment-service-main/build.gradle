@@ -10,4 +10,5 @@ dependencies {
     implementation project(':payment-service-domain')
     testImplementation 'io.projectreactor:reactor-test'
     implementation 'com.scalar.maven:scalar:0.4.4'
+    runtimeOnly 'org.postgresql:postgresql'
 }
