@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import kh.edu.istad.platform.order.application.dto.CreateOrderResult;
 import kh.edu.istad.platform.order.application.usecase.CreateOrderUseCase;
 import kh.edu.istad.platform.order.application.usecase.GetAllOrderUseCase;
+import kh.edu.istad.platform.order.application.usecase.GetOrderByIdUseCase;
 import kh.edu.istad.platform.order.restapi.dto.CreateOrderRequest;
 import kh.edu.istad.platform.order.restapi.dto.OrderResponse;
 import kh.edu.istad.platform.order.restapi.mapper.OrderWebMapper;
@@ -15,11 +16,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderController {
+    private final GetOrderByIdUseCase getOrderByIdUseCase;
    private final CreateOrderUseCase createOrderUseCase;
    private final OrderWebMapper orderWebMapper;
    private final GetAllOrderUseCase getAllOrderUseCase;
@@ -38,4 +42,14 @@ public class OrderController {
    ){
        return createOrderUseCase.execute(orderWebMapper.toCommand(createOrderRequest));
    }
+
+    @GetMapping("/{orderId}")
+    public OrderResponse getOrderById(
+            @PathVariable("orderId") UUID orderId
+    ) {
+        var order = getOrderByIdUseCase.execute(orderId);
+        return orderWebMapper.orderToOrderResponse(order);
+    }
+
+
 }

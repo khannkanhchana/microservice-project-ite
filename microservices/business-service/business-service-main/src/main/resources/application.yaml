@@ -1,9 +1,21 @@
-server:
-  port: 9092
+#server:
+#  port: 9092
+#spring:
+#  config:
+#    import: "file:./.env[.properties]"
+#  application:
+#    name: business-service
+#  mongodb:
+#    uri: ${BUSINESS_MONGODB_URI}
+
+
 spring:
-  config:
-    import: "file:./.env[.properties]"
   application:
     name: business-service
-  mongodb:
-    uri: ${BUSINESS_MONGODB_URI}
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mongo-customer_db
+    username: postgres
+    password: 111999
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 9092

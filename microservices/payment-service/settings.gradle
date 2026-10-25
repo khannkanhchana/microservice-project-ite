@@ -7,8 +7,11 @@ pluginManagement {
 }
 rootProject.name = 'payment-service'
 
+
+include 'payment-service-persistence'
 include 'payment-service-domain:payment-application-service'
 include 'payment-service-domain:payment-domain-core'
 include 'payment-service-application'
 include 'payment-service-main'
 include 'payment-service-restapi'
+

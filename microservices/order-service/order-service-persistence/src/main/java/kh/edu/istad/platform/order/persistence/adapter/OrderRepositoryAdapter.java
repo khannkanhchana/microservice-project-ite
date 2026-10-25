@@ -10,6 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+import java.util.UUID;
+
 
 @Repository
 @RequiredArgsConstructor
@@ -30,4 +33,13 @@ public class OrderRepositoryAdapter implements OrderRepository {
         jpaRepository.saveAndFlush(entity);
         return order;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Order> findById(UUID orderId) {
+        return jpaRepository.findById(orderId)
+                .map(orderPersistenceMapper::toDomain);
+    }
+
+
 }

@@ -10,4 +10,8 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.springframework:spring-webmvc:7.0.9'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // add Eureka Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 }

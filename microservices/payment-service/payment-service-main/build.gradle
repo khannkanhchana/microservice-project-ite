@@ -5,10 +5,23 @@ plugins {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+
     implementation project(':payment-service-restapi')
+    implementation project(':payment-service-persistence')
     implementation project(':payment-service-application')
     implementation project(':payment-service-domain')
-    testImplementation 'io.projectreactor:reactor-test'
+
     implementation 'com.scalar.maven:scalar:0.4.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
+
     runtimeOnly 'org.postgresql:postgresql'
+
+    testImplementation 'io.projectreactor:reactor-test'
+
+    // add eureka
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+
+
+
 }
