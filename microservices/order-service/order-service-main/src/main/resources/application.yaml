@@ -23,6 +23,15 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    healthcheck:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+
 scalar:
   enabled: true
   url: /v3/api-docs

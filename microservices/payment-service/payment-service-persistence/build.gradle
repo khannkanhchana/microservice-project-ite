@@ -8,4 +8,8 @@ dependencies {
 
     implementation project(':payment-service-domain')
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    //add more
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }

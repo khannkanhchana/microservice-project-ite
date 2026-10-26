@@ -19,7 +19,6 @@ public record ProcessPaymentRequest(
 
         @NotNull
         @DecimalMin("0.01")
-
         BigDecimal creditBalance
 ) {
 }

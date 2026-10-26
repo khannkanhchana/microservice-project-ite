@@ -2,20 +2,20 @@
 package kh.edu.istad.platform.payment.restapi.controller;
 
 import jakarta.validation.Valid;
-import kh.edu.istad.platform.payment.domain.entity.Payment;
-import kh.edu.istad.platform.payment.domain.valueobject.CustomerId;
-import kh.edu.istad.platform.payment.domain.valueobject.Money;
-import kh.edu.istad.platform.payment.domain.valueobject.OrderId;
 import kh.edu.istad.platform.payment.persistence.PaymentPersistenceService;
 import kh.edu.istad.platform.payment.persistence.dto.OrderResponse;
 import kh.edu.istad.platform.payment.restapi.dto.PaymentResponse;
 import kh.edu.istad.platform.payment.restapi.dto.ProcessPaymentRequest;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Clock;
-import java.time.ZonedDateTime;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,42 +24,56 @@ import java.util.UUID;
 public class PaymentController {
 
     private final PaymentPersistenceService paymentPersistenceService;
-    private final Clock paymentClock;
 
     @GetMapping("/test-order/{orderId}")
-    public OrderResponse testOrder(@PathVariable("orderId") UUID orderId) {
+    public Mono<OrderResponse> testOrder(
+            @PathVariable UUID orderId
+    ) {
         return paymentPersistenceService.getOrder(orderId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PaymentResponse process(
-            @Valid @RequestBody ProcessPaymentRequest request) {
+    public Mono<PaymentResponse> process(
+            @Valid @RequestBody ProcessPaymentRequest request
+    ) {
+        return paymentPersistenceService.processPayment(
+                request.orderId(),
+                request.customerId(),
+                request.amount()
+        ).map(outcome -> new PaymentResponse(
+                outcome.payment().id().value(),
+                outcome.payment().orderId().value(),
+                outcome.payment().customerId().value(),
+                outcome.payment().status().name(),
+                outcome.payment().price().amount(),
+                outcome.creditEntry().totalCreditAmount().amount(),
+                outcome.failureMessage()
+                        .map(List::of)
+                        .orElseGet(List::of)
+        )).onErrorMap(
+                IllegalArgumentException.class,
+                ex -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        ex.getMessage(),
+                        ex
+                )
+        ).onErrorMap(
+                IllegalStateException.class,
+                ex -> {
+                    String message = ex.getMessage();
 
-        // Verify that the order exists in Order Service.
-        paymentPersistenceService.getOrder(request.orderId());
+                    if (message != null
+                            && message.contains("not found")) {
+                        return new ResponseStatusException(
+                                HttpStatus.NOT_FOUND, message, ex
+                        );
+                    }
 
-        // Initialize payment.
-        var customerId = new CustomerId(request.customerId());
-
-        var payment = Payment.initialize(
-                new OrderId(request.orderId()),
-                customerId,
-                new Money(request.amount()),
-                ZonedDateTime.now(paymentClock)
-        );
-
-        /*
-         * Payment processing must be delegated to your existing
-         * ProcessPaymentUseCase and persistence implementation.
-         *
-         * Do not call paymentPersistenceService.process(...)
-         * because that method does not exist in the code provided.
-         */
-
-        throw new UnsupportedOperationException(
-                "Connect the existing ProcessPaymentUseCase and "
-                        + "payment persistence implementation here."
+                    return new ResponseStatusException(
+                            HttpStatus.CONFLICT, message, ex
+                    );
+                }
         );
     }
 }
