@@ -1,5 +1,6 @@
 plugins {
     id 'spring-boot-common-conventions'
+    id 'spring-cloud-common-conventions'
 }
 
 dependencies {
@@ -13,5 +14,8 @@ dependencies {
 
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-scalar:3.1.1'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 }

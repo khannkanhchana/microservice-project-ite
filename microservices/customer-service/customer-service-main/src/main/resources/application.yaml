@@ -12,10 +12,15 @@ spring:
     password: 111999
     url: jdbc:postgresql://localhost:5432/mongo-customer_db
   application:
-    name: istad-ite-project1
+    name: customer-service
 
 server:
   port: 9091
+
+  cloud:
+    consul:
+      discovery:
+        instance-id: ${spring.application.name}-${random.value}
 
 #spring:
 #  jpa:

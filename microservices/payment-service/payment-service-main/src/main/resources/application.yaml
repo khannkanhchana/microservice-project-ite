@@ -1,7 +1,42 @@
+#
+#spring:
+#  application:
+#    name: payment-service
+#  data:
+#    mongodb:
+#      uri: mongodb://mongod:mongod@localhost:2026/payment_db?authSource=admin
+#
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/mongo-customer_db
+#    username: postgres
+#    password: 111999
+#    driver-class-name: org.postgresql.Driver
+#
+#
+#server:
+#  port: 9093
+#
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#    healthcheck:
+#      enabled: true
+#
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info
+
+
 
 spring:
   application:
     name: payment-service
+
   data:
     mongodb:
       uri: mongodb://mongod:mongod@localhost:2026/payment_db?authSource=admin
@@ -12,21 +47,30 @@ spring:
     password: 111999
     driver-class-name: org.postgresql.Driver
 
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        register: true
+        service-name: payment-service
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+        register-health-check: true
 
 server:
   port: 9093
 
 eureka:
   client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    healthcheck:
-      enabled: true
+    enabled: false
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  endpoint:
+    health:
+      show-details: always

@@ -55,6 +55,7 @@
               <build path="$PROJECT_DIR$/microservices/order-service" name="order-service">
                 <projects>
                   <project path="$PROJECT_DIR$/microservices/order-service" />
+                  <project path="$PROJECT_DIR$/microservices/order-service/order-service-client" />
                   <project path="$PROJECT_DIR$/microservices/order-service/order-service-domain" />
                   <project path="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-application-service" />
                   <project path="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-domain-core" />
@@ -104,6 +105,7 @@
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-restapi" />
             <option value="$PROJECT_DIR$/microservices/eureka-server" />
             <option value="$PROJECT_DIR$/microservices/order-service" />
+            <option value="$PROJECT_DIR$/microservices/order-service/order-service-client" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-application-service" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain/order-domain-core" />
