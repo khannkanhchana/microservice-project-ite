@@ -4,4 +4,8 @@ plugins{
 dependencies {
     api('kh.edu.istad:customer-domain-core')
     api 'org.springframework.data:spring-data-commons'
+    api 'io.projectreactor:reactor-core'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

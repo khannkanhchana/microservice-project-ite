@@ -5,16 +5,19 @@ import kh.edu.istad.platform.order.domain.entity.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 
 public interface OrderRepository {
 
 
-    Page<Order> findAll(Pageable pageable);
+    Flux<Order> findAll();
 
-    Order save (Order order);
+    Mono<Page<Order>> findAll(Pageable pageable);
 
-    Optional<Order> findById(UUID orderId);
+    Mono<Order> save(Order order);
+
+    Mono<Order> findById(UUID orderId);
 }

@@ -1,45 +1,41 @@
-#spring:
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
-#  datasource:
-#    driver-class-name: org.postgresql.Driver
-#    username: postgres
-#    password: 111999
-#    url: jdbc:postgresql://localhost:5432/mongo-customer_db
-#  jackson:
-#    deserialization:
-#      fail-on-unknown-properties: true
-#  application:
-#    name:  order-service
-#server:
-#  port: 9094
-#
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka/
-#    healthcheck:
-#      enabled: true
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health,info
-#
-#
-#scalar:
-#  enabled: true
-#  url: /v3/api-docs
-#  path: /scalar
-
-
-
 spring:
+  #add r2dbc
+  r2dbc:
+    url: r2dbc:postgresql://localhost:9543/db_order
+    username: iteuser
+    password: qwerqwer
+  liquibase:
+    enabled: true
+    url: jdbc:postgresql://localhost:9543/db_order
+    user: iteuser
+    password: qwerqwer
+    change-log: classpath:db/changelog/db_changelog-master.yaml
+
+  # add name of application
+  application:
+    name: order-service
+
+  profiles:
+    active: dev
+  config:
+    import: "optional:consul:"
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      config:
+        enabled: true
+        format: yaml
+        watch:
+          enabled: true
+      discovery:
+        enabled: true
+        register: true
+        service-name: order-service
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+        register-health-check: true
   jpa:
     hibernate:
       ddl-auto: update
@@ -47,34 +43,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: 111999
-    url: jdbc:postgresql://localhost:5432/mongo-customer_db
-
+    username: iteuser
+    password: qwerqwer
+    url: jdbc:postgresql://localhost:9543/db_order
   jackson:
     deserialization:
       fail-on-unknown-properties: true
 
-  application:
-    name: order-service
-
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        register: true
-        service-name: order-service
-        prefer-ip-address: true
-        health-check-path: /actuator/health
-        health-check-interval: 15s
-        register-health-check: true
-
-server:
-  port: 9094
 
 eureka:
   client:
@@ -89,25 +66,12 @@ management:
     health:
       show-details: always
 
-scalar:
-  enabled: true
-  url: /v3/api-docs
-  path: /scalar
-
-#server:
-#  port: 9094
-#
-#spring:
-#  application:
-#    name: order-service
-#  cloud:
-#    consul:
-#      discovery:
-#        health-check-url: http://host.docker.internal:${server.port}/actuator/health
-#        prefer-ip-address: true
-#        service-name: order-service
-#        instance-id: ${spring.application.name}-${random.value}
+service:
+  message: "Order service is running"
+  version: "1.0.0"
+  env: "dev"
 
 
 
 
+#port 9094

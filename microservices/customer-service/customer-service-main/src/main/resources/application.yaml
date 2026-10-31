@@ -1,57 +1,20 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: 111999
-    url: jdbc:postgresql://localhost:5432/mongo-customer_db
   application:
     name: customer-service
-
-server:
-  port: 9091
-
+  main:
+    web-application-type: reactive
+  r2dbc:
+    url: ${CUSTOMER_DB_URL:r2dbc:postgresql://localhost:5432/mongo-customer_db}
+    username: ${CUSTOMER_DB_USERNAME:postgres}
+    password: ${CUSTOMER_DB_PASSWORD:111999}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/customer-schema.sql
   cloud:
     consul:
       discovery:
         instance-id: ${spring.application.name}-${random.value}
 
-#spring:
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
-#  datasource:
-#    driver-class-name: org.postgresql.Driver
-#    username: postgres
-#    password: 111999
-#    url: jdbc:postgresql://localhost:5432/spring-microservice01_db
-#  jackson:
-#    deserialization:
-#      fail-on-unknown-properties: true
-#  application:
-#    name: istad-ite-project1
-
-
-#spring:
-#  mongodb:
-#    host: localhost
-#    port: 2026
-#    username: mongod
-#    password: mongod
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/mongo-customer_db
-#    username: postgres
-#    password: 111999
-#    driver-class-name: org.postgresql.Driver
-
-
+server:
+  port: 9091

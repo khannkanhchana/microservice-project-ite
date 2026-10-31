@@ -8,6 +8,7 @@ import kh.edu.istad.platform.order.domain.exception.DomainException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -18,13 +19,13 @@ public class GetOrderByIdUseCase {
     private final OrderRepository orderRepository;
 
     @Transactional(readOnly = true)
-    public Order execute(UUID orderId) {
+    public Mono<Order> execute(UUID orderId) {
         if (orderId == null) {
             throw new DomainException("Order ID is required");
         }
 
         return orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new DomainException("Order not found: " + orderId));
+                .switchIfEmpty(Mono.error(() ->
+                        new DomainException("Order not found: " + orderId)));
     }
 }

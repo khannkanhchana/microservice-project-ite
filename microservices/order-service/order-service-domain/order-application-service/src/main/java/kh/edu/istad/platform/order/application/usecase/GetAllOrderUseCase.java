@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 
 @Service
@@ -15,7 +16,7 @@ public class GetAllOrderUseCase {
 
     private final OrderRepository orderRepository;
 
-    public Page<Order> execute(Pageable pageable){
+    public Mono<Page<Order>> execute(Pageable pageable){
         return orderRepository.findAll(pageable);
     }
 }

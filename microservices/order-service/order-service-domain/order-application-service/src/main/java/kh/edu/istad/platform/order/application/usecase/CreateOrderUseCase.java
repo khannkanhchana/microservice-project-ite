@@ -11,6 +11,7 @@ import kh.edu.istad.platform.order.domain.valueobject.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class CreateOrderUseCase {
     private final OrderRepository orderRepository;
 
     @Transactional
-    public CreateOrderResult execute(CreateOrderCommand command){
+    public Mono<CreateOrderResult> execute(CreateOrderCommand command){
         if (command == null){
             throw  new DomainException("Order command is required");
         }
@@ -42,16 +43,16 @@ public class CreateOrderUseCase {
                 command.city()
         );
 
-        var items = command
-                .items()
-                .stream()
-                .map(item -> {
+        var items = java.util.stream.IntStream.range(0, command.items().size())
+                .mapToObj(index -> {
+                   var item = command.items().get(index);
                    var product = new Product(
                            item.name(),
                            new Money(item.price())
                    );
 
                    return OrderItem.create(
+                           new OrderItemId(index + 1),
                            orderId,
                            product,
                            item.quantity()
@@ -67,13 +68,11 @@ public class CreateOrderUseCase {
                 items
         );
 
-        var saved = orderRepository.save(order);
-
-        return new CreateOrderResult(
+        return orderRepository.save(order).map(saved -> new CreateOrderResult(
                 saved.orderId().id(),
                 saved.trackingId().id(),
                 saved.status(),
                 saved.price().amount()
-        );
+        ));
     }
 }

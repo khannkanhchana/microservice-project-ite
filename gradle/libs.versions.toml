@@ -1,0 +1,28 @@
+[versions]
+java-version = "25"
+spring-boot-gradle-plugin = "4.1.1"
+dependency-management-plugin = "1.1.7"
+spring-doc-openapi = "3.2.0"
+
+
+
+
+[libraries]
+spring-boot-gradle-plugin ={module= "org.springframework.boot:spring-boot-gradle-plugin",version.ref= "spring-boot-gradle-plugin"}
+dependency-management-plugin ={module="io.spring.gradle:dependency-management-plugin" , version.ref= "dependency-management-plugin"}
+spring-boot-starter-data-r2dbc-plugin= {module="org.springframework.boot:spring-boot-starter-data-r2dbc"}
+springdoc-openapi-starter-webmvc-ui = {module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "spring-doc-openapi"}
+
+
+
+
+
+[bundles]
+gradle-denpendency-management = [
+    "spring-boot-gradle-plugin",
+    "dependency-management-plugin"
+]
+
+[plugins]
+java-commom-conventions = {id = "java-commom-conventions"}
+spring-common-coventions = {id = "spring-common-conventions"}

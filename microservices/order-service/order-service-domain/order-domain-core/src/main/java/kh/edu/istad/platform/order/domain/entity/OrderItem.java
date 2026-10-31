@@ -42,6 +42,7 @@ public record OrderItem(
     }
 
     public static OrderItem create(
+            OrderItemId itemId,
             OrderId orderId,
             Product product,
             int quantity
@@ -55,7 +56,7 @@ public record OrderItem(
         }
 
         return new OrderItem(
-                OrderItemId.generate(),
+                itemId,
                 orderId,
                 product,
                 quantity,

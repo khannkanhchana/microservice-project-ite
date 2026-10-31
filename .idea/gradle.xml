@@ -17,6 +17,8 @@
                   <project path="$PROJECT_DIR$/istad-common" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-domain" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-restapi" />
+                  <project path="$PROJECT_DIR$/istad-common/istad-common-swagger" />
+                  <project path="$PROJECT_DIR$/istad-common/istad-common-webflux" />
                 </projects>
               </build>
               <build path="$PROJECT_DIR$/microservices" name="microservices">
@@ -87,6 +89,8 @@
             <option value="$PROJECT_DIR$/istad-common" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-domain" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-restapi" />
+            <option value="$PROJECT_DIR$/istad-common/istad-common-swagger" />
+            <option value="$PROJECT_DIR$/istad-common/istad-common-webflux" />
             <option value="$PROJECT_DIR$/microservices" />
             <option value="$PROJECT_DIR$/microservices/business-service" />
             <option value="$PROJECT_DIR$/microservices/business-service/business-service-domain" />

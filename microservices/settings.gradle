@@ -1,10 +1,24 @@
 //rootProject.name = 'istad-common'
 
 
+dependencyResolutionManagement {
+//    repositories {
+//        mavenCentral()
+//    }
+
+    versionCatalogs {
+        libs {
+            from(
+                    files("../gradle/libs.versions.toml"))
+        }
+    }
+}
+
 rootProject.name = 'microservices'
 includeBuild 'business-service'
 includeBuild 'customer-service'
 includeBuild 'order-service'
 includeBuild 'payment-service'
 includeBuild 'eureka-server'
+
 

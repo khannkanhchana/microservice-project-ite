@@ -3,8 +3,12 @@ plugins{
 }
 dependencies {
     api('kh.edu.istad:customer-application-service')
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springdoc:springdoc-openapi-starter-common:3.1.1'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springdoc:springdoc-openapi-starter-common:3.2.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 }

@@ -1,7 +1,21 @@
 pluginManagement {
     includeBuild('../../build-logic')
     repositories { gradlePluginPortal();
-        mavenCentral() }
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+
+    versionCatalogs {
+        libs {
+            from(
+                    files("../../gradle/libs.versions.toml"))
+        }
+    }
 }
 rootProject.name = 'order-service'
 

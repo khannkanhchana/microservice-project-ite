@@ -24,6 +24,8 @@ public interface OrderPersistenceMapper {
     @Mapping(target = "postalCode", source = "streetAddress.postalCode")
     @Mapping(target = "city", source = "streetAddress.city")
     @Mapping(target = "price", source = "price.amount")
+    @Mapping(target = "orderStatus", source = "status")
+    @Mapping(target = "failureMessage", expression = "java(String.join(\"\\n\", order.failureMessages()))")
     OrderEntity toEntity(Order order);
 
     @Mapping(target = "itemId", source = "orderItemId.id")
@@ -40,7 +42,8 @@ public interface OrderPersistenceMapper {
     @Mapping(target = "items",
             expression = "java(toItems(entity.getItems(), entity.getId()))")
     @Mapping(target = "trackingId", source = "trackingId")
-    @Mapping(target = "status", source = "status")
+    @Mapping(target = "status", source = "orderStatus")
+    @Mapping(target = "failureMessages", expression = "java(entity.getFailureMessage() == null || entity.getFailureMessage().isEmpty() ? List.of() : List.of(entity.getFailureMessage().split(\"\\n\")))")
     @Mapping(target = "initCancel", ignore = true)
     @Mapping(target = "cancel", ignore = true)
     Order toDomain(OrderEntity entity);
@@ -75,7 +78,7 @@ public interface OrderPersistenceMapper {
         );
     }
 
-    default OrderItemId toOrderItemId(UUID id){
+    default OrderItemId toOrderItemId(Integer id){
         return  new OrderItemId(id);
     }
     default OrderId toOrderId(UUID id) {

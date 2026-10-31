@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  vault:
+    image: hashicorp/vault:2.2
+    container_name: vault-server
+    restart: unless-stopped
+    # Required to prevent Vault secrets from being swapped to disk
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./vault/config:/vault/config
+      - ./vault/data:/vault/data
+      - ./vault/logs:/vault/logs
+    environment:
+      - VAULT_ADDR=http://0.0.0
+      - VAULT_API_ADDR=http://127.0.0.1:8200
+    ports:
+      - "8200:8200"
+    command: server -config=/vault/config/vault.hcl

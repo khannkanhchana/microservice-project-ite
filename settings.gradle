@@ -1,5 +1,8 @@
+
+
 rootProject.name = 'istad-ite-project1'
 
 includeBuild 'istad-common'
 includeBuild 'microservices'
+
 

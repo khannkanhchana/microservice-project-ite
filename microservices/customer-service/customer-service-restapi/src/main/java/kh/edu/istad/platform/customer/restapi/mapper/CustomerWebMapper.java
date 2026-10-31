@@ -24,6 +24,8 @@ public interface CustomerWebMapper {
     CustomerResponse toResponse(Customer customer);
 
     @Mapping(target = "customerId", source = "customer.id.id")
+    @Mapping(target = "familyName", source = "customer.familyName")
+    @Mapping(target = "givenName", source = "customer.givenName")
     CustomerUpdateResponse toUpdateResponse(CustomerUpdatedEvent customerUpdatedEvent);
 
     @Mapping(target = "customerId", source = "customerId.id")

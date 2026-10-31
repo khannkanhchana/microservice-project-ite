@@ -2,17 +2,14 @@ package kh.edu.istad.platform.order.domain.valueobject;
 
 import kh.edu.istad.platform.order.domain.exception.DomainException;
 
-import java.util.UUID;
-
-public record OrderItemId(UUID id) {
-
+public record OrderItemId(Integer id) {
     public OrderItemId {
-        if (id == null){
+        if (id == null) {
             throw new DomainException("Order item ID is required");
+        }
+        if (id <= 0) {
+            throw new DomainException("Order item ID must be positive");
         }
     }
 
-    public static OrderItemId generate(){
-        return new OrderItemId(UUID.randomUUID());
-    }
 }

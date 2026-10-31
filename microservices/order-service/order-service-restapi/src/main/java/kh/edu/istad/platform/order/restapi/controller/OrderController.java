@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import reactor.core.publisher.Mono;
 
 
 @RestController
@@ -29,26 +30,26 @@ public class OrderController {
    private final GetAllOrderUseCase getAllOrderUseCase;
 
    @GetMapping
-   public Page<OrderResponse> getAllOrders(@PageableDefault(size = 10,
+   public Mono<Page<OrderResponse>> getAllOrders(@PageableDefault(size = 10,
    sort = "id",
    direction = Sort.Direction.DESC) Pageable pageable){
        return getAllOrderUseCase.execute(pageable)
-               .map(orderWebMapper::orderToOrderResponse);
+               .map(page -> page.map(orderWebMapper::orderToOrderResponse));
    }
    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateOrderResult create(
+    public Mono<CreateOrderResult> create(
             @Valid @RequestBody CreateOrderRequest createOrderRequest
    ){
        return createOrderUseCase.execute(orderWebMapper.toCommand(createOrderRequest));
    }
 
     @GetMapping("/{orderId}")
-    public OrderResponse getOrderById(
+    public Mono<OrderResponse> getOrderById(
             @PathVariable("orderId") UUID orderId
     ) {
-        var order = getOrderByIdUseCase.execute(orderId);
-        return orderWebMapper.orderToOrderResponse(order);
+        return getOrderByIdUseCase.execute(orderId)
+                .map(orderWebMapper::orderToOrderResponse);
     }
 
 

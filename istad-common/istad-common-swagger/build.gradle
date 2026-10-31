@@ -1,0 +1,9 @@
+
+plugins{
+    id "spring-boot-common-conventions"
+}
+
+dependencies {
+    implementation libs.springdoc.openapi.starter.webmvc.ui
+
+}
