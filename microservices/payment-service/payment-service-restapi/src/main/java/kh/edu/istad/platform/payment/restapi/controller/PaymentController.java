@@ -6,6 +6,7 @@ import kh.edu.istad.platform.payment.persistence.PaymentPersistenceService;
 import kh.edu.istad.platform.payment.persistence.dto.OrderResponse;
 import kh.edu.istad.platform.payment.restapi.dto.PaymentResponse;
 import kh.edu.istad.platform.payment.restapi.dto.ProcessPaymentRequest;
+import kh.edu.istad.platform.payment.domain.service.PaymentOutcome;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,9 +26,24 @@ public class PaymentController {
 
     private final PaymentPersistenceService paymentPersistenceService;
 
+    @GetMapping("/{paymentId}")
+    public Mono<PaymentResponse> get(@PathVariable("paymentId") UUID paymentId) {
+        return paymentPersistenceService.payment(paymentId).map(this::response);
+    }
+
+    @GetMapping("/orders/{orderId}")
+    public Mono<PaymentResponse> getForOrder(@PathVariable("orderId") UUID orderId) {
+        return paymentPersistenceService.paymentForOrder(orderId).map(this::response);
+    }
+
+    @PostMapping("/orders/{orderId}/refund")
+    public Mono<PaymentResponse> refund(@PathVariable("orderId") UUID orderId) {
+        return paymentPersistenceService.refund(orderId).map(this::response);
+    }
+
     @GetMapping("/test-order/{orderId}")
     public Mono<OrderResponse> testOrder(
-            @PathVariable UUID orderId
+            @PathVariable("orderId") UUID orderId
     ) {
         return paymentPersistenceService.getOrder(orderId);
     }
@@ -41,17 +57,7 @@ public class PaymentController {
                 request.orderId(),
                 request.customerId(),
                 request.amount()
-        ).map(outcome -> new PaymentResponse(
-                outcome.payment().id().value(),
-                outcome.payment().orderId().value(),
-                outcome.payment().customerId().value(),
-                outcome.payment().status().name(),
-                outcome.payment().price().amount(),
-                outcome.creditEntry().totalCreditAmount().amount(),
-                outcome.failureMessage()
-                        .map(List::of)
-                        .orElseGet(List::of)
-        )).onErrorMap(
+        ).map(this::response).onErrorMap(
                 IllegalArgumentException.class,
                 ex -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -75,5 +81,12 @@ public class PaymentController {
                     );
                 }
         );
+    }
+
+    private PaymentResponse response(PaymentOutcome outcome) {
+        return new PaymentResponse(outcome.payment().id().value(), outcome.payment().orderId().value(),
+                outcome.payment().customerId().value(), outcome.payment().status().name(),
+                outcome.payment().price().amount(), outcome.creditEntry().totalCreditAmount().amount(),
+                outcome.failureMessage().map(List::of).orElseGet(List::of));
     }
 }

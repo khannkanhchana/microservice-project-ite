@@ -17,4 +17,6 @@ public interface OrderRepository {
     Order save (Order order);
 
     Optional<Order> findById(UUID orderId);
+
+    Order update(UUID orderId, java.util.function.UnaryOperator<Order> transition);
 }

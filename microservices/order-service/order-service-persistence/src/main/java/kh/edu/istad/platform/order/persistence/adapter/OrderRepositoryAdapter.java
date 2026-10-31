@@ -22,6 +22,18 @@ public class OrderRepositoryAdapter implements OrderRepository {
     private final OrderPersistenceMapper orderPersistenceMapper;
 
     @Override
+    @Transactional
+    public Order update(UUID id, java.util.function.UnaryOperator<Order> transition) {
+        var entity = jpaRepository.findForUpdate(id).orElseThrow(() -> new
+                kh.edu.istad.platform.order.application.usecase.CheckoutException(
+                kh.edu.istad.platform.order.application.usecase.CheckoutException.Reason.NOT_FOUND, "Order not found"));
+        var changed = transition.apply(orderPersistenceMapper.toDomain(entity));
+        jpaRepository.saveAndFlush(orderPersistenceMapper.toEntity(changed));
+        return changed;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<Order> findAll(Pageable pageable) {
         return jpaRepository.findAll(pageable).map(orderPersistenceMapper::toDomain);
     }

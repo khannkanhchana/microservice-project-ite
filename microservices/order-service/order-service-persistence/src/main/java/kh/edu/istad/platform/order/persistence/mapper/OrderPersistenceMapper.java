@@ -27,6 +27,7 @@ public interface OrderPersistenceMapper {
     OrderEntity toEntity(Order order);
 
     @Mapping(target = "itemId", source = "orderItemId.id")
+    @Mapping(target = "productId", source = "product.productId")
     @Mapping(target = "productName", source = "product.name")
     @Mapping(target = "price", source = "price.amount")
     @Mapping(target = "subTotal", source = "subTotal.amount")

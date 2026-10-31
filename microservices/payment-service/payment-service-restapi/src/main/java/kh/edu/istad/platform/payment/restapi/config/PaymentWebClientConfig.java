@@ -13,6 +13,9 @@ public class PaymentWebClientConfig {
     @Bean
     @LoadBalanced
     public WebClient.Builder loadBalancedWebClientBuilder() {
-        return WebClient.builder();
+        var http = reactor.netty.http.client.HttpClient.create()
+                .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
+                .responseTimeout(java.time.Duration.ofSeconds(8));
+        return WebClient.builder().clientConnector(new org.springframework.http.client.reactive.ReactorClientHttpConnector(http));
     }
 }

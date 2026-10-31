@@ -4,6 +4,7 @@ package kh.edu.istad.platform.payment.restapi.client;
 
 
 import kh.edu.istad.platform.payment.restapi.dto.OrderResponse;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -15,8 +16,9 @@ public class OrderClient {
 
     private final RestClient restClient;
 
-    public OrderClient() {
-        this.restClient = RestClient.builder()
+    public OrderClient(
+            @Qualifier("loadBalancedRestClientBuilder") RestClient.Builder builder) {
+        this.restClient = builder
                 .baseUrl("http://order-service")
                 .build();
     }

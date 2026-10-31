@@ -21,7 +21,7 @@ public class InitiateCustomerUseCase {
     private final CustomerDomainService customerDomainService;
     private final CustomerRepository customerRepository;
     public InitiateCustomerResult execute(InitiateCustomerCommand command){
-        log.info("initiatete customer usecase:{}", command);
+        log.debug("Registering a customer");
 
 
 

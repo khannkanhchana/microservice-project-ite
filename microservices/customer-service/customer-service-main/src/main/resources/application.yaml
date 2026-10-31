@@ -8,14 +8,21 @@ spring:
         format_sql: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: 111999
-    url: jdbc:postgresql://localhost:5432/mongo-customer_db
+    username: ${CUSTOMER_DB_USERNAME:checkout}
+    password: ${CUSTOMER_DB_PASSWORD:checkout}
+    url: ${CUSTOMER_DB_URL:jdbc:postgresql://localhost:55433/customer_db}
   application:
-    name: istad-ite-project1
+    name: customer-service
 
 server:
   port: 9091
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
 
 #spring:
 #  jpa:

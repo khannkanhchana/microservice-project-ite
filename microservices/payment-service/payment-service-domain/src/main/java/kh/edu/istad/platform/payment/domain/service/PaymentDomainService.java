@@ -37,7 +37,7 @@ public class PaymentDomainService {
             return new PaymentOutcome(
                     payment.fail(),
                     credit,
-                    Optional.empty()
+                    Optional.of("Insufficient credit")
             );
         }
 

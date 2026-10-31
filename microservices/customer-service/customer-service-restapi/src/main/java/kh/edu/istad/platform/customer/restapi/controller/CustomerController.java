@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import kh.edu.istad.platform.customer.domain.dto.UpdateCustomerCommand;
 import kh.edu.istad.platform.customer.domain.event.CustomerDeactivatedEvent;
 import kh.edu.istad.platform.customer.domain.usecase.DeactivateCustomerUseCase;
+import kh.edu.istad.platform.customer.domain.usecase.GetCustomerUseCase;
 import kh.edu.istad.platform.customer.domain.usecase.UpdateCustomerUseCase;
 import kh.edu.istad.platform.customer.restapi.dto.*;
 import kh.edu.istad.platform.customer.restapi.mapper.CustomerWebMapper;
@@ -32,6 +33,12 @@ public class CustomerController {
     private final UpdateCustomerUseCase updateCustomerUseCase;
     private final DeactivateCustomerUseCase deactivateCustomerUseCase;
     private final GetAllCustomersUseCase getAllCustomersUseCase;
+    private final GetCustomerUseCase getCustomerUseCase;
+
+    @GetMapping("/{customerId}")
+    public CustomerResponse getCustomer(@PathVariable("customerId") UUID customerId) {
+        return customerWebMapper.toResponse(getCustomerUseCase.execute(customerId));
+    }
 
     @GetMapping
     public PagedModel<CustomerResponse> getAllCustomers(

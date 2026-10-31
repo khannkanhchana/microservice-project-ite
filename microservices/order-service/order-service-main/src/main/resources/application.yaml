@@ -8,9 +8,9 @@ spring:
         format_sql: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: 111999
-    url: jdbc:postgresql://localhost:5432/mongo-customer_db
+    username: ${ORDER_DB_USERNAME:checkout}
+    password: ${ORDER_DB_PASSWORD:checkout}
+    url: ${ORDER_DB_URL:jdbc:postgresql://localhost:55433/order_db}
   jackson:
     deserialization:
       fail-on-unknown-properties: true
@@ -21,8 +21,10 @@ server:
 
 eureka:
   client:
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
     healthcheck:
       enabled: true
 management:

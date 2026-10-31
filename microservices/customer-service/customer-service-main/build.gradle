@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
     implementation 'kh.edu.istad:customer-domain-core'
     implementation 'kh.edu.istad:customer-application-service'
     implementation 'kh.edu.istad:customer-service-message'

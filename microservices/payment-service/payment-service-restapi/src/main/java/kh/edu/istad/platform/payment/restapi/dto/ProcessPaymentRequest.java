@@ -15,10 +15,7 @@ public record ProcessPaymentRequest(
 
         @NotNull
         @DecimalMin("0.01")
-        BigDecimal amount,
-
-        @NotNull
-        @DecimalMin("0.01")
-        BigDecimal creditBalance
+        @jakarta.validation.constraints.Digits(integer=17, fraction=2)
+        BigDecimal amount
 ) {
 }

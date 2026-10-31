@@ -21,5 +21,12 @@ public interface OrderWebMapper {
     @Mapping(target = "orderId", source = "orderId.id")
     @Mapping(target = "trackingId", source = "trackingId.id")
     @Mapping(target = "totalAmount", source = "price.amount")
+    @Mapping(target = "customerId", source = "customerId.id")
+    @Mapping(target = "businessId", source = "businessId.id")
     OrderResponse orderToOrderResponse(Order order);
+
+    @Mapping(target = "productId", source = "product.productId")
+    @Mapping(target = "name", source = "product.name")
+    @Mapping(target = "price", source = "price.amount")
+    OrderResponse.Item toResponseItem(kh.edu.istad.platform.order.domain.entity.OrderItem item);
 }

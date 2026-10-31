@@ -17,6 +17,8 @@ public class OrderItemEmbeddable {
     @Column(nullable = false)
     private UUID itemId;
 
+    private UUID productId;
+
     @Column(nullable = false, length = 255)
     private String productName;
 

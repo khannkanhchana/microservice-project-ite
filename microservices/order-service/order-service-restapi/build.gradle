@@ -3,6 +3,9 @@ plugins {
 }
 
 dependencies {
+    implementation 'org.springframework:spring-tx'
+    implementation platform('org.springframework.cloud:spring-cloud-dependencies:2025.1.3')
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
     implementation project(':order-service-domain:order-application-service')
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 }

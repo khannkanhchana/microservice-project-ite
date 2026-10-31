@@ -30,7 +30,12 @@ public class MongoCreditEntryRepository
     public Mono<CreditEntry> save(CreditEntry creditEntry) {
         CreditEntryDocument document = toDocument(creditEntry);
 
-        return mongoTemplate.save(document)
+        return mongoTemplate.findById(document.getId(), CreditEntryDocument.class)
+                .flatMap(existing -> {
+                    existing.setTotalCreditAmount(document.getTotalCreditAmount());
+                    return mongoTemplate.save(existing);
+                })
+                .switchIfEmpty(reactor.core.publisher.Mono.defer(() -> mongoTemplate.insert(document)))
                 .map(this::toDomain);
     }
 

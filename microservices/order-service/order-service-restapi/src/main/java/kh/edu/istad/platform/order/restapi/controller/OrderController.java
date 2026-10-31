@@ -27,6 +27,12 @@ public class OrderController {
    private final CreateOrderUseCase createOrderUseCase;
    private final OrderWebMapper orderWebMapper;
    private final GetAllOrderUseCase getAllOrderUseCase;
+    private final kh.edu.istad.platform.order.application.usecase.CheckoutOrderUseCase checkoutOrderUseCase;
+
+    @PostMapping("/{orderId}/checkout")
+    public OrderResponse checkout(@PathVariable("orderId") UUID orderId) {
+        return orderWebMapper.orderToOrderResponse(checkoutOrderUseCase.execute(orderId));
+    }
 
    @GetMapping
    public Page<OrderResponse> getAllOrders(@PageableDefault(size = 10,
