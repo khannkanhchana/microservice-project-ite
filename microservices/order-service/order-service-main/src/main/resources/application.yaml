@@ -1,4 +1,25 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          customer-service:
+            provider: authorization-server
+            client-id: ${OAUTH2_CLIENT_ID:customer-client}
+            client-secret: ${OAUTH2_CLIENT_SECRET:customer-secret}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: client_credentials
+            scope: customer.read
+          business-service:
+            provider: authorization-server
+            client-id: ${BUSINESS_OAUTH2_CLIENT_ID:business-client}
+            client-secret: ${BUSINESS_OAUTH2_CLIENT_SECRET:business-secret}
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: client_credentials
+            scope: business.read
+        provider:
+          authorization-server:
+            token-uri: ${AUTH_SERVER_TOKEN_URI:http://localhost:9000/oauth2/token}
   #add r2dbc
   r2dbc:
     url: r2dbc:postgresql://localhost:9543/db_order
@@ -70,6 +91,14 @@ service:
   message: "Order service is running"
   version: "1.0.0"
   env: "dev"
+
+customer:
+  service:
+    base-url: ${CUSTOMER_SERVICE_URL:http://localhost:9091}
+
+business:
+  service:
+    base-url: ${BUSINESS_SERVICE_URL:http://localhost:9092}
 
 
 #  http:

@@ -3,6 +3,12 @@ spring:
     name: customer-service
   main:
     web-application-type: reactive
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH_SERVER_ISSUER:http://localhost:9000}
+          jwk-set-uri: ${AUTH_SERVER_JWK_SET_URI:http://localhost:9000/oauth2/jwks}
   r2dbc:
     url: ${CUSTOMER_DB_URL:r2dbc:postgresql://localhost:5432/mongo-customer_db}
     username: ${CUSTOMER_DB_USERNAME:postgres}

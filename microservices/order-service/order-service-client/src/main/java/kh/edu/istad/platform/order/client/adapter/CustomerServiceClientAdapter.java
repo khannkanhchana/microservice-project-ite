@@ -6,14 +6,12 @@ import kh.edu.istad.platform.order.client.httpclient.CustomerHttpClient;
 import kh.edu.istad.platform.order.client.port.out.client.CustomerServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 @Component
 @RequiredArgsConstructor
 public class CustomerServiceClientAdapter implements CustomerServiceClient {
 
-    private final WebClient.Builder webClientBuilder;
     private final CustomerHttpClient customerHttpClient;
 
 //    public record GivenName(String givenName){

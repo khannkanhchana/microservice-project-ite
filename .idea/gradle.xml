@@ -26,6 +26,11 @@
                   <project path="$PROJECT_DIR$/microservices" />
                 </projects>
               </build>
+              <build path="$PROJECT_DIR$/microservices/authorization-server" name="authorization-server">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/authorization-server" />
+                </projects>
+              </build>
               <build path="$PROJECT_DIR$/microservices/business-service" name="business-service">
                 <projects>
                   <project path="$PROJECT_DIR$/microservices/business-service" />
@@ -92,6 +97,7 @@
             <option value="$PROJECT_DIR$/istad-common/istad-common-swagger" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-webflux" />
             <option value="$PROJECT_DIR$/microservices" />
+            <option value="$PROJECT_DIR$/microservices/authorization-server" />
             <option value="$PROJECT_DIR$/microservices/business-service" />
             <option value="$PROJECT_DIR$/microservices/business-service/business-service-domain" />
             <option value="$PROJECT_DIR$/microservices/business-service/business-service-domain/business-application-service" />

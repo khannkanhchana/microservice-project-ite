@@ -3,15 +3,13 @@ package kh.edu.istad.platform.order.client.config;
 import kh.edu.istad.platform.order.client.exception.DownStreamServiceException;
 import kh.edu.istad.platform.order.client.httpclient.BusinessHttpClient;
 import kh.edu.istad.platform.order.client.httpclient.CustomerHttpClient;
-import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.support.WebClientAdapter;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.support.WebClientHttpServiceGroupConfigurer;
-import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.service.registry.ImportHttpServices;
 import org.springframework.web.service.registry.HttpServiceGroup;
 
@@ -33,11 +31,22 @@ import org.springframework.web.service.registry.HttpServiceGroup;
 //@RequiredArgsConstructor
 public class ClientConfig {
 
-    public WebClientHttpServiceGroupConfigurer webClientHttpServiceGroupConfigurer() {
+    @Bean
+    public WebClientHttpServiceGroupConfigurer webClientHttpServiceGroupConfigurer(
+            @Qualifier("customerOAuth2Filter") ServerOAuth2AuthorizedClientExchangeFilterFunction customerOAuth2Filter,
+            @Qualifier("businessOAuth2Filter") ServerOAuth2AuthorizedClientExchangeFilterFunction businessOAuth2Filter,
+            @Value("${customer.service.base-url}") String customerBaseUrl,
+            @Value("${business.service.base-url}") String businessBaseUrl) {
         return groups -> {
+            groups.filterByName("business-service")
+                    .forEachClient((group, clientBuilder) -> clientBuilder
+                            .baseUrl(businessBaseUrl)
+                            .filter(businessOAuth2Filter));
             groups.filterByName("customer-service")
                     .forEachClient((group, clientBuilder) -> {
                         clientBuilder
+                                .baseUrl(customerBaseUrl)
+                                .filter(customerOAuth2Filter)
                                 .defaultHeader("User-Agent", "WebClient")
                                 .defaultStatusHandler(
                                         HttpStatusCode::isError,

@@ -2,6 +2,8 @@
 package kh.edu.istad.platform.order;
 
 import kh.edu.istad.platform.order.application.dto.QueryCustomerResult;
+import kh.edu.istad.platform.order.application.dto.QueryBusinessResult;
+import kh.edu.istad.platform.order.client.httpclient.BusinessHttpClient;
 import kh.edu.istad.platform.order.client.port.out.client.CustomerServiceClient;
 import kh.edu.istad.platform.order.config.ServicePropConfig;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class WebFluxController {
 
     private final CustomerServiceClient customerServiceClient;
+    private final BusinessHttpClient businessHttpClient;
     private final ServicePropConfig servicePropConfig;
 
     @Value("${global.version:unknown}")
@@ -29,6 +32,11 @@ public class WebFluxController {
     @GetMapping("/customers")
     public Flux<QueryCustomerResult> getCustomers() {
         return customerServiceClient.getCustomerNames();
+    }
+
+    @GetMapping("/businesses")
+    public Flux<QueryBusinessResult> getBusinesses() {
+        return businessHttpClient.queryBusinesses();
     }
 
     @GetMapping("/flux")
