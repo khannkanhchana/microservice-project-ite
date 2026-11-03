@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation "kh.edu.istad:order-application-service"
+    implementation project(':order-service-domain:order-application-service')
     implementation 'org.springframework.boot:spring-boot-starter-webclient'
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
     testImplementation 'io.projectreactor:reactor-test'

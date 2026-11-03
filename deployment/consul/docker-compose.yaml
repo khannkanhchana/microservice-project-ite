@@ -15,6 +15,6 @@ services:
       - ite-net
     ports:
       - "8500:8500"
-    command: "agent -server -ui -client=0.0.0.0 -data-dir='/consul/data' -node=consul-server1 -bootstrap-expect=1"
+#    command: "agent -server -ui -client=0.0.0.0 -data-dir='/consul/data' -node=consul-server1 -bootstrap-expect=1"
     volumes:
       - ./consul/data:/consul/data

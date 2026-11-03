@@ -72,6 +72,11 @@ service:
   env: "dev"
 
 
-
+#  http:
+#    serviceclient:
+#      customer-service:
+#        connection-timeout: 10
+#        checkout-timeout: 10
+#        base-url: http://customer-service
 
 #port 9094

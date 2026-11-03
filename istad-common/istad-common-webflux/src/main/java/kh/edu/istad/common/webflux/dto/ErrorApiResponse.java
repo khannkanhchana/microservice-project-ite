@@ -1,6 +1,10 @@
 package kh.edu.istad.common.webflux.dto;
 
-public record ErrorApiResponse (
-        String message
-){
+import java.time.LocalDateTime;
+
+public record ErrorApiResponse(
+        String message,
+        int status,
+        LocalDateTime timestamp
+) {
 }

@@ -10,6 +10,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
     api 'io.projectreactor:reactor-core'
     api project(':order-service-domain:order-domain-core')
     api 'org.springframework.data:spring-data-commons'

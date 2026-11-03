@@ -10,8 +10,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     implementation 'com.scalar.maven:scalar:0.4.4'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.1.1'
-    implementation 'kh.edu.istad:order-service-client'
+    implementation project(':order-service-client')
+    implementation project(':order-service-domain:order-application-service')
     implementation project(':order-service-restapi')
+
     implementation project(':order-service-persistence')
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-config'
