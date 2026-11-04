@@ -28,7 +28,7 @@ The authorization server registers `business-client` / `business-secret` for
 `business.read`, using `client_credentials` and `client_secret_basic`. Override
 these defaults using `BUSINESS_OAUTH2_CLIENT_ID` and `BUSINESS_OAUTH2_CLIENT_SECRET`
 in both Authorization Server and Order. Register a separate writer client with
-`business.write` if creation is needed. The existing `customer-client` only grants
+`business.write` if creation is needed. The existing `order-client` only grants
 `customer.read` and cannot access Business APIs.
 
 Request a token with the registered business scope, then send it to Business Service:

@@ -1,12 +1,14 @@
 spring:
+  main:
+    web-application-type: reactive
   security:
     oauth2:
       client:
         registration:
           customer-service:
             provider: authorization-server
-            client-id: ${OAUTH2_CLIENT_ID:customer-client}
-            client-secret: ${OAUTH2_CLIENT_SECRET:customer-secret}
+            client-id: ${OAUTH2_CLIENT_ID:order-client}
+            client-secret: ${OAUTH2_CLIENT_SECRET:order-secret}
             client-authentication-method: client_secret_basic
             authorization-grant-type: client_credentials
             scope: customer.read

@@ -26,7 +26,7 @@ no longer exposed.
 
 Customer APIs require an `Authorization: Bearer <access_token>` header. GET routes
 require `customer.read`; POST requires `customer.write`. The authorization server's
-current `customer-client` registration has only `customer.read`, so it cannot create
+current `order-client` registration has only `customer.read`, so it cannot create
 customers. Register an explicitly authorized writer client with `customer.write`
 before using POST. Other routes, including Swagger UI, are denied by default.
 `/actuator/health` and its subpaths remain public for Consul health checks.
@@ -50,7 +50,7 @@ needed and cached; the authorization server need not be running at service start
 After starting the authorization server and Customer Service (with PostgreSQL):
 
 ```powershell
-curl.exe -u "customer-client:customer-secret" -X POST "http://localhost:9000/oauth2/token" -d "grant_type=client_credentials&scope=customer.read"
+curl.exe -u "order-client:order-secret" -X POST "http://localhost:9000/oauth2/token" -d "grant_type=client_credentials&scope=customer.read"
 curl.exe "http://localhost:9091/api/customers" -H "Authorization: Bearer <access_token>"
 ```
 

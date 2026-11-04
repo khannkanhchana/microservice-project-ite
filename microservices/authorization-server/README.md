@@ -14,15 +14,15 @@ JWT, `token_type`, `expires_in`, and `scope`; no refresh token is issued.
 Invalid credentials return 401, and invalid scopes or unsupported grants return 400.
 
 ```powershell
-curl.exe -u "customer-client:customer-secret" -X POST "http://localhost:9000/oauth2/token" -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=client_credentials&scope=customer.read"
+curl.exe -u "order-client:order-secret" -X POST "http://localhost:9000/oauth2/token" -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=client_credentials&scope=customer.read"
 ```
 
 | Environment variable | Default | Purpose |
 | --- | --- | --- |
 | `AUTH_SERVER_PORT` | `9000` | Listening port |
 | `AUTH_SERVER_ISSUER` | `http://localhost:9000` | JWT issuer; set to the externally reachable URL |
-| `OAUTH2_CLIENT_ID` | `customer-client` | Registered client ID |
-| `OAUTH2_CLIENT_SECRET` | `customer-secret` | Client secret; override outside local development |
+| `OAUTH2_CLIENT_ID` | `order-client` | Registered client ID |
+| `OAUTH2_CLIENT_SECRET` | `order-secret` | Client secret; override outside local development |
 | `OAUTH2_ACCESS_TOKEN_TTL` | `15m` | Positive access token lifetime, e.g. `30m` or `1h` |
 | `BUSINESS_OAUTH2_CLIENT_ID` | `business-client` | Separate client for Business reads |
 | `BUSINESS_OAUTH2_CLIENT_SECRET` | `business-secret` | Business client secret |

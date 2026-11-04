@@ -8,8 +8,8 @@ spring:
 authorization:
   issuer: ${AUTH_SERVER_ISSUER:http://localhost:9000}
   client:
-    id: ${OAUTH2_CLIENT_ID:customer-client}
-    secret: ${OAUTH2_CLIENT_SECRET:customer-secret}
+    id: ${OAUTH2_CLIENT_ID:order-client}
+    secret: ${OAUTH2_CLIENT_SECRET:order-secret}
     access-token-time-to-live: ${OAUTH2_ACCESS_TOKEN_TTL:15m}
   business-client:
     id: ${BUSINESS_OAUTH2_CLIENT_ID:business-client}

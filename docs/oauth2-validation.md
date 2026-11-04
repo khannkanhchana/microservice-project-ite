@@ -1,88 +1,76 @@
-# OAuth2 validation
+# Manual OAuth2 testing in Postman
 
-The checks below are provided for you to run. No builds, tests, service startup,
-or validation scripts were executed for this change.
+Start Authorization Server, Customer and Order with their databases and infrastructure.
+Use the actual Order port shown in its startup log; Consul may configure it.
 
-## Automated component and HTTP integration checks
+## 1. Obtain a token
 
-From the repository root with JDK 25:
+- Method: POST
+- URL: http://localhost:9000/oauth2/token
+- Authorization: Basic Auth
+- Username: order-client
+- Password: order-secret
+- Body: x-www-form-urlencoded
+  - grant_type: client_credentials
+  - scope: customer.read
 
-```powershell
-.\gradlew.bat :microservices:authorization-server:test :microservices:customer-service:customer-service-main:test :microservices:business-service:business-service-main:test :microservices:order-service:order-service-client:test
-.\gradlew.bat :microservices:order-service:order-service-main:test --tests '*OrderAuthorizationFailureTests'
-```
+Expect 200 OK with access_token. Copy that token for the next request.
+Use your configured credentials if environment variables override these defaults.
+Authorization Server issues the token; Order requests it as a service client.
+A browser GET to the token endpoint does not issue a token.
 
-| Coverage | Checks |
+## 2. Call Customer directly
+
+GET http://localhost:9091/api/customers
+
+In Authorization, select Bearer Token and paste the access_token.
+Expect 200 OK and a JSON array. An empty array is valid with no customer data.
+Repeat with No Auth: expect 401. Repeat with an invalid token: expect 401.
+
+## 3. Call Customer through Order
+
+GET http://localhost:9094/customers
+
+Replace 9094 with the actual running Order port. Select No Auth.
+Expect 200 OK. Order automatically obtains and sends its own access token to Customer.
+Repeat to exercise caching. The response alone does not prove token reuse;
+inspect Authorization Server request logs to count token requests.
+
+## 4. Rejected credentials and permissions
+
+| Request | Expected result |
 | --- | --- |
-| Authorization Server | Valid client credentials; wrong secret; unknown client; missing auth; unsupported grant/authentication method; unregistered scope; signed JWT, issuer, scope and lifetime; separate business registration |
-| Customer and Business resource servers | Real production security configuration and controllers with mocked use cases; public-key retrieval over local HTTP; valid signature/read scope; missing/malformed/expired/future-dated/wrong-issuer/wrong-signature JWTs; insufficient scope; read tokens denied POST |
-| Order HTTP clients | Production client manager and OAuth2 filters; simulated HTTP token/resource servers; client credentials and scope request; Bearer header propagation; token reuse; separate registrations; renewal within expiry window; token-endpoint failure; cached token behavior during outage |
+| Token request with wrong Basic Auth password | 401, invalid_client |
+| Token request with unregistered client ID | 401, invalid_client |
+| Order client requests scope customer.write | 400, invalid_scope |
+| POST /api/customers on Customer with read token and no body | 403; rejected before creation |
 
-HTTP simulation is local to the JUnit tests. It does not claim that real services,
-database connectivity, Consul configuration or deployed routing work. Resource
-server tests validate actual signed JWTs; Order's simulated resource server only
-checks propagated bearer headers. Postman CLI simulation remains unavailable due
-to the previously observed managed manifest error.
+## Optional Business flow
 
-## Live end-to-end checks
+Start Business. Request a token with Basic Auth business-client / business-secret,
+using grant_type=client_credentials and scope=business.read.
+GET http://localhost:9092/api/businesses with that Bearer token should return 200.
+Without a token, expect 401. Using the Business token on Customer should return 403;
+using the Customer token on Business should return 403.
+GET Order's /businesses with No Auth should return 200.
 
-Start Authorization Server, Customer, Business and Order, together with their
-configured databases and infrastructure. Run from the repository root with Python 3:
+## Optional expiration check
 
-```powershell
-$env:ORDER_SERVICE_URL = 'http://localhost:8080' # set the actual Order port
-python scripts/validate_oauth2.py
-```
+Set OAUTH2_ACCESS_TOKEN_TTL=2s in Authorization Server's launch environment.
+Restart Authorization Server, Customer and Order to clear cached keys and tokens.
+Obtain and retain a new token, then call Order's /customers once.
+Wait until expiration plus at least 60 seconds for JWT clock skew.
+Customer should reject the old token with 401; Order's /customers with No Auth
+should return 200 by obtaining a new token. Restore the normal TTL afterward
+and restart services.
 
-The script checks both APIs directly, then calls Order's `/customers` and
-`/businesses` without supplying an inbound token. Since both downstream services
-require tokens, successful Order responses exercise automatic acquisition and
-Bearer propagation through the real HTTP service groups. The script checks
-response shapes but does not prove domain data correctness with empty databases.
+## Optional Authorization Server outage check
 
-Optional environment variables: `AUTH_SERVER_URL`, `CUSTOMER_SERVICE_URL`,
-`BUSINESS_SERVICE_URL`, `ORDER_SERVICE_URL`, `OAUTH2_CLIENT_ID`,
-`OAUTH2_CLIENT_SECRET`, `BUSINESS_OAUTH2_CLIENT_ID`, `BUSINESS_OAUTH2_CLIENT_SECRET`.
-Use the same credentials in Authorization Server, Order and the script.
-The script never prints tokens or secrets and performs no domain writes.
+Keep Customer running. Stop Authorization Server and restart Order to clear its
+cached tokens. GET Order's /customers with No Auth should return 503 with title
+Service authorization unavailable. Without restarting Order, cached valid tokens
+may continue working. Restore Authorization Server and restart Order afterward.
 
-The business registration defaults to `business-client` / `business-secret`,
-with `business.read`. Customer credentials still default to `customer-client` /
-`customer-secret`, with `customer.read`. Neither client can create records.
-Order's business URL defaults to `http://localhost:9092` and can be overridden by
-`BUSINESS_SERVICE_URL`.
-
-## Actual signed-token expiration and renewal
-
-Set `OAUTH2_ACCESS_TOKEN_TTL=2s` for Authorization Server, restart it, and restart
-Customer, Business and Order to clear cached keys and tokens. Run:
-
-```powershell
-python scripts/validate_oauth2.py --expiration
-```
-
-This separate mode retains the original signed tokens, warms both Order clients,
-waits past expiration plus the resource servers' 60-second clock skew, checks that
-both APIs reject the old tokens with 401, and checks Order succeeds by obtaining
-new tokens. Expect roughly 67 seconds. The script refuses long token lifetimes
-in this mode. Restore the normal TTL and restart services afterward.
-
-## Authorization Server outage
-
-Stop Authorization Server yourself and restart Order with its normal token URI,
-leaving Customer and Business running. Run:
-
-```powershell
-python scripts/validate_oauth2.py --outage
-```
-
-The script confirms token acquisition is unavailable and both Order endpoints
-return 503 with a safe problem response. Restarting Order makes its token cache
-empty: valid cached tokens can legitimately continue working during an outage.
-The HTTP integration tests cover that cached case separately. Token failures
-never cause an unauthenticated fallback or automatic replay of a downstream write.
-Restore Authorization Server after this check.
-
-For network-failure testing, a token URI pointing to a closed local port can be
-set through `AUTH_SERVER_TOKEN_URI` when launching a separate Order instance.
-The script does not stop services or modify deployment configuration for you.
+Restart Authorization Server and Order after changing client credentials.
+Restart Order after restarting the in-memory Authorization Server to clear tokens
+signed with the previous key.

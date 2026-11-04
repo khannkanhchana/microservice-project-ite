@@ -70,7 +70,7 @@ class OAuth2ClientIntegrationTests {
                 registration("customer-service", "customer.read"),
                 registration("business-service", "business.read"));
         var config = new OAuth2ClientConfig();
-        var service = config.authorizedClientService(registrations);
+        var service = config.reactiveAuthorizedClientService(registrations);
         var manager = config.authorizedClientManager(registrations, service);
         customers = proxy(CustomerHttpClient.class, config.customerOAuth2Filter(manager, service));
         businesses = proxy(BusinessHttpClient.class, config.businessOAuth2Filter(manager, service));
@@ -133,6 +133,12 @@ class OAuth2ClientIntegrationTests {
     void connectionFailureDoesNotReachResourceServer() {
         authorizationServer.disposeNow();
         StepVerifier.create(customers.queryCustomers())
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(OAuth2AuthorizationException.class);
+                    assertThat(((OAuth2AuthorizationException) error).getError().getErrorCode())
+                            .isEqualTo("temporarily_unavailable");
+                }).verify(Duration.ofSeconds(10));
+        StepVerifier.create(businesses.queryBusinesses())
                 .expectError(OAuth2AuthorizationException.class).verify(Duration.ofSeconds(10));
         assertThat(bearerHeaders).isEmpty();
     }

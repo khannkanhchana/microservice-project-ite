@@ -9,12 +9,19 @@ import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClient
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.RemoveAuthorizedClientReactiveOAuth2AuthorizationFailureHandler;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.endpoint.WebClientReactiveClientCredentialsTokenResponseClient;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+
+import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 @Configuration
 public class OAuth2ClientConfig {
     @Bean
-    ReactiveOAuth2AuthorizedClientService authorizedClientService(
+    ReactiveOAuth2AuthorizedClientService reactiveAuthorizedClientService(
             ReactiveClientRegistrationRepository registrations) {
         return new InMemoryReactiveOAuth2AuthorizedClientService(registrations);
     }
@@ -25,8 +32,16 @@ public class OAuth2ClientConfig {
             ReactiveOAuth2AuthorizedClientService authorizedClients) {
         var manager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
                 registrations, authorizedClients);
+        var tokenClient = new WebClientReactiveClientCredentialsTokenResponseClient();
         manager.setAuthorizedClientProvider(ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
-                .clientCredentials()
+                .clientCredentials(credentials -> credentials.accessTokenResponseClient(request ->
+                        tokenClient.getTokenResponse(request)
+                                .timeout(Duration.ofSeconds(10))
+                                .onErrorMap(failure -> failure instanceof WebClientRequestException
+                                                || failure instanceof TimeoutException, failure ->
+                                        new OAuth2AuthorizationException(
+                                                new OAuth2Error("temporarily_unavailable"),
+                                                "Authorization server is unavailable", failure))))
                 .build());
         return manager;
     }

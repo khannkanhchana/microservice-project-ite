@@ -61,7 +61,8 @@ public class SecurityConfig {
             @Value("${authorization.business-client.id}") String businessClientId,
             @Value("${authorization.business-client.secret}") String businessClientSecret,
             @Value("${authorization.client.access-token-time-to-live}") Duration tokenTimeToLive) {
-        RegisteredClient client = RegisteredClient.withId("customer-service-client")
+        RegisteredClient client = RegisteredClient.withId("order-service-client")
+                .clientName("Order Service - Customer API client")
                 .clientId(clientId)
                 .clientSecret(passwordEncoder.encode(clientSecret))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -73,6 +74,7 @@ public class SecurityConfig {
                         .build())
                 .build();
         RegisteredClient businessClient = RegisteredClient.withId("business-service-client")
+                .clientName("Order Service - Business API client")
                 .clientId(businessClientId)
                 .clientSecret(passwordEncoder.encode(businessClientSecret))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)

@@ -9,8 +9,8 @@ The client registration uses `client_credentials`, `client_secret_basic`, and
 
 | Environment variable | Default |
 | --- | --- |
-| `OAUTH2_CLIENT_ID` | `customer-client` |
-| `OAUTH2_CLIENT_SECRET` | `customer-secret` |
+| `OAUTH2_CLIENT_ID` | `order-client` |
+| `OAUTH2_CLIENT_SECRET` | `order-secret` |
 | `AUTH_SERVER_TOKEN_URI` | `http://localhost:9000/oauth2/token` |
 | `CUSTOMER_SERVICE_URL` | `http://localhost:9091` |
 | `BUSINESS_SERVICE_URL` | `http://localhost:9092` |
