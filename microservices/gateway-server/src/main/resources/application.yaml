@@ -1,0 +1,51 @@
+server:
+  port: 9999
+
+spring:
+  application:
+    name: gateway-server
+
+  profiles:
+    active: dev
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          default-filters:
+            - SaveSession
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: my-order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/my-orders/**
+              filters:
+                - RewritePath=/my-orders/?(?<segment>.*), /$\{segment}
+
+            - id: json-placeholder
+              uri: https://jsonplaceholder.typicode.com
+              predicates:
+                - Path=/jph/**
+              filters:
+                - RewritePath=/jph/?(?<segment>.*), /$\{segment}
+
+    consul:
+      discovery:
+        query-passing: true
+        instance-id: ${spring.application.name}-${random.value}
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,gateway
+
+  endpoint:
+    gateway:
+      access: read_only

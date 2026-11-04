@@ -1,13 +1,29 @@
 package kh.edu.istad.platform.order.exception;
 
+import kh.edu.istad.platform.order.client.exception.DownStreamServiceException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Map;
+
+@RestControllerAdvice
 public class GlobalExceptionHandler extends RuntimeException {
 
-    private String service;
-
-
-    public GlobalExceptionHandler(String message) {
-        super(message);
+    @ExceptionHandler(DownStreamServiceException.class)
+    public ResponseEntity<?> handle(DownStreamServiceException ex){
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(
+                        Map.of(
+                                "service",ex.getService(),
+                                "message", "Down stream service error",
+                                "details", ex.getMessage()
+                        )
+                );
     }
+
 
 }
 

@@ -37,9 +37,8 @@ spring:
   application:
     name: payment-service
 
-  data:
-    mongodb:
-      uri: mongodb://mongod:mongod@localhost:2026/payment_db?authSource=admin
+  mongodb:
+    uri: mongodb://mongod:mongod@localhost:2026/payment_db?authSource=admin&serverSelectionTimeoutMS=3000&connectTimeoutMS=3000&socketTimeoutMS=3000
 
   datasource:
     url: jdbc:postgresql://localhost:5432/mongo-customer_db

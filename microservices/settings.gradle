@@ -20,5 +20,6 @@ includeBuild 'customer-service'
 includeBuild 'order-service'
 includeBuild 'payment-service'
 includeBuild 'eureka-server'
+includeBuild 'gateway-server'
 
 
