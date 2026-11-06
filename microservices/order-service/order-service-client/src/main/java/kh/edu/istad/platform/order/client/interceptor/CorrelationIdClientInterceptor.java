@@ -1,9 +1,5 @@
 package kh.edu.istad.platform.order.client.interceptor;
 
-// This interceptor intercepts every outgoing gRPC call,
-// generates a correlation ID (or reads an existing one),
-// and attaches it to the gRPC Metadata.
-
 import io.grpc.*;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.interceptor.GrpcGlobalClientInterceptor;
@@ -27,8 +23,6 @@ public class CorrelationIdClientInterceptor implements ClientInterceptor {
         return new ForwardingClientCall.SimpleForwardingClientCall<>(next.newCall(method, callOptions)) {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
-
-                // Generate a unique Correlation ID for this request
                 String correlationId = UUID.randomUUID().toString();
                 headers.put(CORRELATION_ID_KEY, correlationId);
 

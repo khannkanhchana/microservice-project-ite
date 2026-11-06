@@ -15,11 +15,10 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.service.registry.ImportHttpServices;
 import org.springframework.web.service.registry.HttpServiceGroup;
 
-//import static jdk.nio.zipfs.ZipFileAttributeView.AttrID.group;
+
 
 @Configuration
 
-// use in spring boot version 4 over
 @ImportHttpServices(
         group = "customer-service",
         types = CustomerHttpClient.class,

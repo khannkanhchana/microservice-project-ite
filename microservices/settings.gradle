@@ -2,9 +2,7 @@
 
 
 dependencyResolutionManagement {
-//    repositories {
-//        mavenCentral()
-//    }
+
 
     versionCatalogs {
         libs {

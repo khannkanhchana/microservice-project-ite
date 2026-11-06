@@ -39,11 +39,11 @@ public class ProductGrpcServerImpl extends ProductGrpcServiceGrpc.ProductGrpcSer
                 .setQuantity(product.getQuantity())
                 .build();
 
-        responseObserver.onNext(response); //
-        responseObserver.onCompleted(); // end proccess
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
-    // Create Product
+
     @Override
     public void createProduct(CreateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
 
