@@ -11,9 +11,10 @@ repositories {
 }
 
 dependencies {
+    implementation ':istad-common-grpc'
 
-    implementation 'build.buf.gen:kanhchana_grpc_protocolbuffers_java:36.2.0.1.20261106083016.ec63a9d9e198'
-    implementation 'build.buf.gen:kanhchana_grpc_grpc_java:1.85.1.1.20261106083016.ec63a9d9e198'
+//    implementation 'build.buf.gen:kanhchana_grpc_protocolbuffers_java:36.2.0.1.20261106083016.ec63a9d9e198'
+//    implementation 'build.buf.gen:kanhchana_grpc_grpc_java:1.85.1.1.20261106083016.ec63a9d9e198'
     implementation 'com.google.protobuf:protobuf-java:4.36.2'
 
     implementation libs.grpc.netty.shaded
