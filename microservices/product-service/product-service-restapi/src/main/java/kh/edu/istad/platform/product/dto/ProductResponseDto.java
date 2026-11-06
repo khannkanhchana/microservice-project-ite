@@ -1,6 +1,6 @@
 package kh.edu.istad.platform.product.dto;
 
-import kh.edu.istad.product.grpc.ProductResponse;
+import build.buf.gen.product.ProductResponse;
 
 public record ProductResponseDto(
         String id,

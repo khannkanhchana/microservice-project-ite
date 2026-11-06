@@ -7,3 +7,4 @@ plugins:
 
   - remote: buf.build/grpc/java
     out: build/generated/source/proto/main/grpc
+

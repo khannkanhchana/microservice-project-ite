@@ -19,8 +19,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = 'order-service'
 
-includeBuild('../../istad-common')
-
 include 'order-service-domain:order-application-service'
 include 'order-service-domain:order-domain-core'
 include 'order-service-persistence'

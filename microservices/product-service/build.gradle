@@ -1,11 +1,20 @@
 plugins {
     id 'spring-boot-common-conventions'
-    alias(libs.plugins.protobuf)
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'buf'
+        url = 'https://buf.build/gen/maven'
+    }
 }
 
 dependencies {
 
-    implementation 'kh.edu.istad:istad-common-grpc:1.0.0'
+    implementation 'build.buf.gen:kanhchana_grpc_protocolbuffers_java:36.2.0.1.20261106083016.ec63a9d9e198'
+    implementation 'build.buf.gen:kanhchana_grpc_grpc_java:1.85.1.1.20261106083016.ec63a9d9e198'
+    implementation 'com.google.protobuf:protobuf-java:4.36.2'
 
     implementation libs.grpc.netty.shaded
     implementation libs.grpc.protobuf
@@ -24,22 +33,4 @@ dependencies {
     runtimeOnly libs.postgresql
     testImplementation libs.spring.boot.starter.test.webmvc
     testImplementation libs.grpc.testing
-}
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.25.5"
-    }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.68.1"
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.plugins {
-                grpc {}
-            }
-        }
-    }
 }

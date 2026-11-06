@@ -3,9 +3,9 @@ package kh.edu.istad.platform.order.client.adapter.grpc;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import kh.edu.istad.platform.order.client.exception.DownStreamServiceException;
-import kh.edu.istad.product.grpc.ProductGrpcServiceGrpc;
-import kh.edu.istad.product.grpc.ProductRequest;
-import kh.edu.istad.product.grpc.ProductResponse;
+import build.buf.gen.product.ProductGrpcServiceGrpc;
+import build.buf.gen.product.ProductRequest;
+import build.buf.gen.product.ProductResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 

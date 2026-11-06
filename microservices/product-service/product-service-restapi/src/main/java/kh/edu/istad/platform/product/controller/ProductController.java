@@ -4,7 +4,7 @@ package kh.edu.istad.platform.product.controller;
 import kh.edu.istad.platform.product.client.ProductGrpcClient;
 import kh.edu.istad.platform.product.dto.CreateProductDto;
 import kh.edu.istad.platform.product.dto.ProductResponseDto;
-import kh.edu.istad.product.grpc.ProductResponse;
+import build.buf.gen.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

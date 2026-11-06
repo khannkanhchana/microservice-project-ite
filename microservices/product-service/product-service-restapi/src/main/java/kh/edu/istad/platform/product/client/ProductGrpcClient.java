@@ -1,10 +1,10 @@
 package kh.edu.istad.platform.product.client;
 
 
-import kh.edu.istad.product.grpc.CreateProductRequest;
-import kh.edu.istad.product.grpc.ProductGrpcServiceGrpc;
-import kh.edu.istad.product.grpc.ProductRequest;
-import kh.edu.istad.product.grpc.ProductResponse;
+import build.buf.gen.product.CreateProductRequest;
+import build.buf.gen.product.ProductGrpcServiceGrpc;
+import build.buf.gen.product.ProductRequest;
+import build.buf.gen.product.ProductResponse;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 

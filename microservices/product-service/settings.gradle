@@ -19,8 +19,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = 'product-service'
 
-includeBuild('../../istad-common')
-
 include 'product-service-domain:product-domain-core'
 include 'product-service-domain:product-application-service'
 include 'product-service-grpc'
