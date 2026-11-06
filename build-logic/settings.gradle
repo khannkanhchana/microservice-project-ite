@@ -1,3 +1,25 @@
+//pluginManagement {
+//    repositories {
+//        gradlePluginPortal()
+//        mavenCentral()
+//    }
+//}
+//
+//dependencyResolutionManagement {
+//    repositories {
+//        gradlePluginPortal()
+//        mavenCentral()
+//    }
+//    versionCatalogs {
+//        libs {
+//            from(
+//                    files("../gradle/libs.versions.toml"))
+//        }
+//    }
+//}
+//
+
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -10,10 +32,10 @@ dependencyResolutionManagement {
         gradlePluginPortal()
         mavenCentral()
     }
+
     versionCatalogs {
         libs {
-            from(
-                    files("../gradle/libs.versions.toml"))
+            from(files("../gradle/libs.versions.toml"))
         }
     }
 }

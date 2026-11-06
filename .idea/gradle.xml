@@ -59,6 +59,11 @@
                   <project path="$PROJECT_DIR$/microservices/gateway-server" />
                 </projects>
               </build>
+              <build path="$PROJECT_DIR$/microservices/iam-service" name="iam-service">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/iam-service" />
+                </projects>
+              </build>
               <build path="$PROJECT_DIR$/microservices/order-service" name="order-service">
                 <projects>
                   <project path="$PROJECT_DIR$/microservices/order-service" />
@@ -81,6 +86,11 @@
                   <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-main" />
                   <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-persistence" />
                   <project path="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
+                </projects>
+              </build>
+              <build path="$PROJECT_DIR$/microservices/product-service" name="product-service">
+                <projects>
+                  <project path="$PROJECT_DIR$/microservices/product-service" />
                 </projects>
               </build>
             </builds>
@@ -114,6 +124,7 @@
             <option value="$PROJECT_DIR$/microservices/customer-service/customer-service-restapi" />
             <option value="$PROJECT_DIR$/microservices/eureka-server" />
             <option value="$PROJECT_DIR$/microservices/gateway-server" />
+            <option value="$PROJECT_DIR$/microservices/iam-service" />
             <option value="$PROJECT_DIR$/microservices/order-service" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-client" />
             <option value="$PROJECT_DIR$/microservices/order-service/order-service-domain" />
@@ -130,6 +141,7 @@
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-main" />
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-persistence" />
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
+            <option value="$PROJECT_DIR$/microservices/product-service" />
           </set>
         </option>
         <option name="myGradleHome" value="" />

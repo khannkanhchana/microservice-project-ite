@@ -21,5 +21,7 @@ includeBuild 'order-service'
 includeBuild 'payment-service'
 includeBuild 'eureka-server'
 includeBuild 'gateway-server'
+includeBuild 'iam-service'
+includeBuild 'product-service'
 
 

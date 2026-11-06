@@ -1,11 +1,57 @@
+//plugins {
+//    id 'spring-common-conventions'
+//    id 'spring-cloud-common-conventions'
+//}
+//
+//dependencies {
+//    implementation project(':order-service-domain:order-application-service')
+//    implementation 'org.springframework.boot:spring-boot-starter-webclient'
+//    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+//    testImplementation 'io.projectreactor:reactor-test'
+//}
+
+
 plugins {
     id 'spring-common-conventions'
     id 'spring-cloud-common-conventions'
+    alias(libs.plugins.protobuf)
 }
 
 dependencies {
-    implementation project(':order-service-domain:order-application-service')
-    implementation 'org.springframework.boot:spring-boot-starter-webclient'
+
+    // gRPC Client Starter (Only client needed, NO server starter here)
+    implementation libs.grpc.client.spring.boot.starter
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.stub
+
+    implementation "kh.edu.istad:order-application-service"
+
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    implementation libs.spring.boot.starter.webflux
+    implementation libs.reactor.core
+
+    // implementation 'org.springframework.boot:spring-boot-starter-webclient'
+
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
-    testImplementation 'io.projectreactor:reactor-test'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                grpc {}
+            }
+        }
+    }
 }
