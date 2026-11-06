@@ -71,6 +71,10 @@ service:
   version: "1.0.0"
   env: "dev"
 
+order:
+  clients:
+    product-service:
+      timeout: ${PRODUCT_GRPC_TIMEOUT:3s}
 
 #  http:
 #    serviceclient:
@@ -79,4 +83,5 @@ service:
 #        checkout-timeout: 10
 #        base-url: http://customer-service
 
-#port 9094
+server:
+  port: 9094

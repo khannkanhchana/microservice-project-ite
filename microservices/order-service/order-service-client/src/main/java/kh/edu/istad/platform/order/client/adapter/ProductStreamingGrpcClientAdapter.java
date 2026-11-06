@@ -1,6 +1,7 @@
 //package kh.edu.istad.platform.order.client.adapter;
 //
 //
+//import build.buf.gen.product.ProductGrpcServiceGrpc;
 //import io.grpc.StatusRuntimeException;
 //import io.grpc.stub.ClientCallStreamObserver;
 //import io.grpc.stub.ClientResponseObserver;

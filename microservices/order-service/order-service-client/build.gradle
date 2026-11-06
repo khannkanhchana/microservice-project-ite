@@ -14,17 +14,18 @@
 plugins {
     id 'spring-common-conventions'
     id 'spring-cloud-common-conventions'
-    alias(libs.plugins.protobuf)
 }
 
 dependencies {
+
+    implementation 'kh.edu.istad:istad-common-grpc:1.0.0'
 
     // gRPC Client Starter (Only client needed, NO server starter here)
     implementation libs.grpc.client.spring.boot.starter
     implementation libs.grpc.protobuf
     implementation libs.grpc.stub
 
-    implementation "kh.edu.istad:order-application-service"
+    implementation project(':order-service-domain:order-application-service')
 
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
@@ -36,22 +37,4 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
-}
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
-    }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.plugins {
-                grpc {}
-            }
-        }
-    }
 }

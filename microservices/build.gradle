@@ -8,7 +8,14 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
-
+// build.gradle
+repositories {
+    mavenCentral()
+    maven {
+        name = 'buf'
+        url 'https://buf.build/gen/maven'
+    }
+}
 dependencies {
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

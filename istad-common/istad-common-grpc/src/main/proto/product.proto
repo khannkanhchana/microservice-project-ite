@@ -1,21 +1,19 @@
+
 syntax = "proto3";
+
+package product;
 
 option java_multiple_files = true;
 option java_package = "kh.edu.istad.product.grpc";
 option java_outer_classname = "ProductProto";
 
 service ProductGrpcService {
-  rpc GetProductById (ProductRequest) returns (ProductResponse);
-  rpc CreateProduct (CreateProductRequest) returns (ProductResponse);
+  rpc GetProductById(ProductRequest) returns (ProductResponse);
+  rpc CreateProduct(CreateProductRequest) returns (ProductResponse);
 }
 
 message ProductRequest {
   string product_id = 1;
-}
-
-message ProductRequest2 {
-  string product_id = 1;
-  double price = 2;
 }
 
 message CreateProductRequest {

@@ -21,11 +21,9 @@ dependencyResolutionManagement {
 
 rootProject.name = 'customer-service'
 
-
 include 'customer-service-main'
 include 'customer-service-domain:customer-domain-core'
 include 'customer-service-domain:customer-application-service'
 include 'customer-service-restapi'
 include 'customer-service-persistence'
 include 'customer-service-message'
-

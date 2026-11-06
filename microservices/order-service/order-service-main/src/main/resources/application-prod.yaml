@@ -1,0 +1,5 @@
+grpc:
+  client:
+    product-service:
+      address: ${PRODUCT_GRPC_ADDRESS}
+      negotiation-type: TLS

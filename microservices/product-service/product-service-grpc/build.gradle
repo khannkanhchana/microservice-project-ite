@@ -1,0 +1,16 @@
+plugins {
+    id 'spring-boot-common-conventions'
+}
+
+dependencies {
+    implementation 'kh.edu.istad:istad-common-grpc:1.0.0'
+
+    // gRPC Server only (no client starter in the gRPC adapter module)
+    implementation libs.grpc.server.spring.boot.starter
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.stub
+    implementation libs.grpc.services
+    implementation 'org.springframework:spring-tx:7.0.9'
+
+    implementation project(':product-service-domain:product-application-service')
+}

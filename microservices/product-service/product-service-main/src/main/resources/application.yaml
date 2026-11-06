@@ -1,0 +1,31 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: product-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:9543/db_product
+    username: iteuser
+    password: qwerqwer
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+grpc:
+  server:
+    port: 9095
+    reflection-service-enabled: true
+    health-service:
+      type: ACTUATOR
+  client:
+    product-service:
+      address: 'static://localhost:9095'
+      negotiation-type: plaintext
+

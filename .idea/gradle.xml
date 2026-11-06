@@ -16,6 +16,7 @@
                 <projects>
                   <project path="$PROJECT_DIR$/istad-common" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-domain" />
+                  <project path="$PROJECT_DIR$/istad-common/istad-common-grpc" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-restapi" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-swagger" />
                   <project path="$PROJECT_DIR$/istad-common/istad-common-webflux" />
@@ -91,6 +92,13 @@
               <build path="$PROJECT_DIR$/microservices/product-service" name="product-service">
                 <projects>
                   <project path="$PROJECT_DIR$/microservices/product-service" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-domain" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-domain/product-application-service" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-domain/product-domain-core" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-grpc" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-main" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-persistence" />
+                  <project path="$PROJECT_DIR$/microservices/product-service/product-service-restapi" />
                 </projects>
               </build>
             </builds>
@@ -103,6 +111,7 @@
             <option value="$PROJECT_DIR$/build-logic" />
             <option value="$PROJECT_DIR$/istad-common" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-domain" />
+            <option value="$PROJECT_DIR$/istad-common/istad-common-grpc" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-restapi" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-swagger" />
             <option value="$PROJECT_DIR$/istad-common/istad-common-webflux" />
@@ -142,6 +151,13 @@
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-persistence" />
             <option value="$PROJECT_DIR$/microservices/payment-service/payment-service-restapi" />
             <option value="$PROJECT_DIR$/microservices/product-service" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-domain" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-domain/product-application-service" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-domain/product-domain-core" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-grpc" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-main" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-persistence" />
+            <option value="$PROJECT_DIR$/microservices/product-service/product-service-restapi" />
           </set>
         </option>
         <option name="myGradleHome" value="" />

@@ -1,0 +1,6 @@
+version: v2
+modules:
+  - path: .
+    name: buf.build/kanhchana/grpc
+    includes:
+      - istad-common/istad-common-grpc/src/main/proto

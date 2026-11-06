@@ -1,0 +1,11 @@
+plugins {
+    id 'spring-common-conventions'
+}
+
+dependencies {
+    implementation project(':product-service-domain:product-application-service')
+    implementation 'kh.edu.istad:istad-common-grpc:1.0.0'
+    implementation libs.spring.boot.starter.webmvc
+    implementation libs.spring.boot.starter.validation
+    implementation libs.grpc.client.spring.boot.starter
+}

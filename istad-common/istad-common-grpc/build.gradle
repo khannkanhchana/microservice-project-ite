@@ -1,10 +1,21 @@
+
 plugins {
     id 'java-common-conventions'
     alias(libs.plugins.protobuf)
 }
 
-dependencies {
+group = 'kh.edu.istad'
+version = '1.0.0'
 
+// build.gradle
+repositories {
+    mavenCentral()
+    maven {
+        name = 'buf'
+        url 'https://buf.build/gen/maven'
+    }
+}
+dependencies {
     api libs.protobuf.java
     api libs.grpc.protobuf
     api libs.grpc.stub
@@ -16,11 +27,13 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
     }
+
     plugins {
         grpc {
             artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpc.get()}"
         }
     }
+
     generateProtoTasks {
         all().each { task ->
             task.plugins {
