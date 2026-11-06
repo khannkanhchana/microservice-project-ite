@@ -25,3 +25,5 @@ include 'order-service-persistence'
 include 'order-service-restapi'
 include 'order-service-main'
 include 'order-service-client'
+
+includeBuild('../../istad-common')

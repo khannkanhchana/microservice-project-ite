@@ -25,3 +25,5 @@ include 'product-service-grpc'
 include 'product-service-persistence'
 include 'product-service-restapi'
 include 'product-service-main'
+
+includeBuild('../../istad-common')

@@ -4,17 +4,11 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven {
-        name = 'buf'
-        url = 'https://buf.build/gen/maven'
-    }
 }
 
 dependencies {
     implementation project(':product-service-domain:product-application-service')
-    implementation 'build.buf.gen:kanhchana_grpc_protocolbuffers_java:36.2.0.1.20261106083016.ec63a9d9e198'
-    implementation 'build.buf.gen:kanhchana_grpc_grpc_java:1.85.1.1.20261106083016.ec63a9d9e198'
-    implementation 'com.google.protobuf:protobuf-java:4.36.2'
+    implementation 'kh.edu.istad:istad-common-grpc:1.0.0'
     implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.boot.starter.validation
     implementation libs.grpc.client.spring.boot.starter
