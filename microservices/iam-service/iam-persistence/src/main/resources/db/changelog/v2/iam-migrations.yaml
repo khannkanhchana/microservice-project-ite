@@ -1,0 +1,96 @@
+databaseChangeLog:
+  - changeSet:
+      id: iam-v2-create-core
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: users
+      changes:
+        - sqlFile:
+            path: 001-create-iam-core.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-upgrade-legacy-core
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: users
+        - columnExists:
+            tableName: users
+            columnName: is_enabled
+      changes:
+        - sqlFile:
+            path: 003-upgrade-legacy-core.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-create-assignments
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: user_roles
+      changes:
+        - sqlFile:
+            path: 002-create-iam-assignments.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-copy-legacy-user-roles
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: users_roles
+      changes:
+        - sqlFile:
+            path: 004-copy-legacy-user-roles.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-copy-legacy-role-permissions
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: roles_permissions
+      changes:
+        - sqlFile:
+            path: 005-copy-legacy-role-permissions.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-copy-legacy-user-permissions
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: users_permissions
+      changes:
+        - sqlFile:
+            path: 006-copy-legacy-user-permissions.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-drop-legacy-joins
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: users_roles
+      changes:
+        - sqlFile:
+            path: 007-drop-legacy-joins.sql
+            relativeToChangelogFile: true
+            splitStatements: true

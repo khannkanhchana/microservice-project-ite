@@ -1,0 +1,11 @@
+plugins { id 'spring-common-conventions' }
+
+description = 'IAM authorization server and infrastructure adapters'
+
+dependencies {
+    implementation project(':iam-domain:iam-application-service')
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+}

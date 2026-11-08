@@ -1,0 +1,9 @@
+plugins { id 'java-common-conventions' }
+
+description = 'Plain Java IAM domain models and business rules'
+
+dependencies {
+    api platform('org.springframework.boot:spring-boot-dependencies:4.1.1')
+    // UserDetails is the only Spring Security API used by the domain User model.
+    api 'org.springframework.security:spring-security-core'
+}

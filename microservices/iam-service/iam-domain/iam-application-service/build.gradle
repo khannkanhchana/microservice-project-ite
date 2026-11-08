@@ -1,0 +1,7 @@
+plugins { id 'java-common-conventions' }
+
+description = 'IAM use cases, commands, results, and output ports'
+
+dependencies {
+    api project(':iam-domain:iam-domain-core')
+}

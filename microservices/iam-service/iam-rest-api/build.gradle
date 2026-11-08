@@ -1,0 +1,10 @@
+plugins { id 'spring-common-conventions' }
+
+description = 'IAM REST controllers, DTOs, validation, and API security'
+
+dependencies {
+    implementation project(':iam-domain:iam-application-service')
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+}

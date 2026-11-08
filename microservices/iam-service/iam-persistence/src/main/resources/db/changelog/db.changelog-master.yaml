@@ -1,0 +1,6 @@
+databaseChangeLog:
+  - includeAll:
+      path: classpath:db/changelog/ddl
+  - include:
+      file: v2/iam-migrations.yaml
+      relativeToChangelogFile: true

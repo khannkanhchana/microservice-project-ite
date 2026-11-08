@@ -1,7 +1,0 @@
-#databaseChangeLog:
-#  - include:
-#      file: org/springframework/security/oauth2/server/authorization/client/oauth2-registered-client-schema.sql
-
-databaseChangeLog:
-  - includeAll:
-      path: classpath:db/changelog/ddl
