@@ -751,9 +751,9 @@ Configure the following environment variables according to the application's con
 ### Database
 
 ```properties
-DB_URL=jdbc:postgresql://localhost:5432/iam_db
-DB_USERNAME=postgres
-DB_PASSWORD=your_database_password
+DB_URL=
+DB_USERNAME=
+DB_PASSWORD=
 ```
 
 ### JWT and Authorization Server
