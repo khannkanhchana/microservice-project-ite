@@ -17,6 +17,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.oauth2.server.authorization.authentication.ClientSecretAuthenticationProvider;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -54,13 +56,32 @@ import java.util.Set;
 import java.util.Map;
 import java.util.function.Function;
 import kh.edu.istad.iam.infrastructure.oidc.OidcClaimsService;
+import kh.edu.istad.iam.infrastructure.oauth.IamAuthorizationJsonMapper;
 import kh.edu.istad.iam.infrastructure.security.IamUserDetails;
 import kh.edu.istad.iam.infrastructure.social.FederatedOAuth2UserService;
 import kh.edu.istad.iam.infrastructure.social.FederatedOidcUserService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private Converter<Jwt, ? extends AbstractAuthenticationToken>
+    jwtAuthenticationConverter() {
+
+        JwtAuthenticationConverter converter =
+                new JwtAuthenticationConverter();
+
+        converter.setJwtGrantedAuthoritiesConverter(
+                new JwtGrantedAuthoritiesConverter()
+        );
+
+        return converter;
+    }
     @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
@@ -83,6 +104,13 @@ public class SecurityConfig {
                                 .oidc(oidc -> oidc
                                         .userInfoEndpoint(userInfo -> userInfo.userInfoMapper(userInfoMapper))
                                         .clientRegistrationEndpoint(Customizer.withDefaults()))
+                                .clientAuthentication(clientAuthentication ->
+                                        clientAuthentication.authenticationProviders(providers -> providers.forEach(provider -> {
+                                            if (provider instanceof ClientSecretAuthenticationProvider clientSecretProvider) {
+                                                clientSecretProvider.setPasswordEncoder(
+                                                        PasswordEncoderFactories.createDelegatingPasswordEncoder());
+                                            }
+                                        })))
                                 .authorizationEndpoint(endpoint -> endpoint.consentPage("/oauth2/consent"))
                 )
                 .authorizeHttpRequests((authorize) ->
@@ -101,60 +129,92 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
     @Order(2)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
-                                                          FederatedOAuth2UserService federatedOAuth2UserService,
-                                                          FederatedOidcUserService federatedOidcUserService)
-            throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(
+            HttpSecurity http,
+            FederatedOAuth2UserService federatedOAuth2UserService,
+            FederatedOidcUserService federatedOidcUserService
+    ) throws Exception {
+
         http
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/auth/register", "/login", "/register",
-                                "/oauth2/authorization/**", "/login/oauth2/code/**").permitAll()
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(
+                                "/login",
+                                "/register",
+                                "/api/auth/register",
+                                "/oauth2/authorization/**",
+                                "/login/oauth2/code/**",
+                                "/error",
+                                "/favicon.ico"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**")
+                )
+
                 .oauth2ResourceServer(resourceServer -> resourceServer
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        )
+                )
+
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(federatedOAuth2UserService)
-                                .oidcUserService(federatedOidcUserService)))
+                                .oidcUserService(federatedOidcUserService)
+                        )
+                )
+
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .failureUrl("/login?error")
+                        .defaultSuccessUrl("/", false)
+                        .permitAll()
+                )
+
                 .exceptionHandling(exceptions -> exceptions
-                        .defaultAuthenticationEntryPointFor((request, response, exception) -> {
-                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                            response.setContentType("application/problem+json");
-                            response.getWriter().write("{\"type\":\"about:blank\",\"title\":\"Unauthorized\",\"status\":401,\"detail\":\"A valid bearer access token is required.\"}");
-                        }, request -> request.getRequestURI().startsWith(request.getContextPath() + "/api/"))
+                        // REST API: បញ្ជូន 401 ជំនួសការបញ្ជូនទៅ Login Page
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, exception) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.setContentType("application/problem+json");
+                                    response.getWriter().write(
+                                            "{\"type\":\"about:blank\"," +
+                                                    "\"title\":\"Unauthorized\"," +
+                                                    "\"status\":401," +
+                                                    "\"detail\":\"A valid bearer access token is required.\"}"
+                                    );
+                                },
+                                request -> request.getRequestURI()
+                                        .startsWith(request.getContextPath() + "/api/")
+                        )
+
+                        // Browser: បញ្ជូនអ្នកប្រើប្រាស់ទៅ Login Page
+                        .authenticationEntryPoint(
+                                new LoginUrlAuthenticationEntryPoint("/login")
+                        )
+
                         .accessDeniedHandler((request, response, exception) -> {
                             response.setStatus(HttpStatus.FORBIDDEN.value());
                             response.setContentType("application/problem+json");
-                            response.getWriter().write("{\"type\":\"about:blank\",\"title\":\"Forbidden\",\"status\":403,\"detail\":\"You do not have permission to perform this action.\"}");
-                        }))
-                // Form login handles the redirect to the login page from the
-                // authorization server filter chain
-                .formLogin(form -> form.loginPage("/login").permitAll());
+                            response.getWriter().write(
+                                    "{\"type\":\"about:blank\"," +
+                                            "\"title\":\"Forbidden\"," +
+                                            "\"status\":403," +
+                                            "\"detail\":\"You do not have permission to perform this action.\"}"
+                            );
+                        })
+                );
 
         return http.build();
     }
 
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter scopes = new JwtGrantedAuthoritiesConverter();
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Collection<org.springframework.security.core.GrantedAuthority> scopeAuthorities = scopes.convert(jwt);
-            Object raw = jwt.getClaims().get("authorities");
-            Stream<String> custom = raw instanceof Collection<?> values
-                    ? values.stream().filter(String.class::isInstance).map(String.class::cast)
-                    : Stream.empty();
-            Stream<org.springframework.security.core.GrantedAuthority> customAuthorities = custom
-                    .map(SimpleGrantedAuthority::new);
-            return Stream.concat(scopeAuthorities == null ? Stream.empty() : scopeAuthorities.stream(), customAuthorities)
-                    .distinct().toList();
-        });
-        return converter;
-    }
 
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
@@ -164,7 +224,14 @@ public class SecurityConfig {
     @Bean
     public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
                                                             RegisteredClientRepository registeredClientRepository) {
-        return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+        var jsonMapper = IamAuthorizationJsonMapper.create();
+        var service = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+        service.setAuthorizationParametersMapper(
+                new JdbcOAuth2AuthorizationService.JsonMapperOAuth2AuthorizationParametersMapper(jsonMapper));
+        service.setAuthorizationRowMapper(
+                new JdbcOAuth2AuthorizationService.JsonMapperOAuth2AuthorizationRowMapper(
+                        registeredClientRepository, jsonMapper));
+        return service;
     }
 
     @Bean

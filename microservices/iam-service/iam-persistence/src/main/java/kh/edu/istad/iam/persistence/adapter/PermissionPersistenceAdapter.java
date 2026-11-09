@@ -48,6 +48,13 @@ public class PermissionPersistenceAdapter implements PermissionRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Permission> findByIds(Collection<Long> permissionIds) {
+        if (permissionIds.isEmpty()) return List.of();
+        return repository.findAllById(permissionIds).stream().map(PermissionPersistenceAdapter::toDomain).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return repository.existsByNameIgnoreCase(name);
     }

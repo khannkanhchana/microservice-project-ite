@@ -248,10 +248,12 @@ public class WebPageController {
     }
 
     @GetMapping("/oauth2/consent")
-    public String consent(@RequestParam String client_id, @RequestParam(required = false) String scope,
-                          @RequestParam(required = false) String state, Model model, HttpServletRequest request) {
+    public String consent(@RequestParam(name = "client_id") String clientId,
+                          @RequestParam(name = "scope", required = false) String scope,
+                          @RequestParam(name = "state", required = false) String state,
+                          Model model, HttpServletRequest request) {
         prepare(model, request);
-        model.addAttribute("clientId", client_id);
+        model.addAttribute("clientId", clientId);
         model.addAttribute("state", state == null ? "" : state);
         model.addAttribute("scopes", scope == null ? List.of() : Arrays.asList(scope.split(" ")));
         return "consent";

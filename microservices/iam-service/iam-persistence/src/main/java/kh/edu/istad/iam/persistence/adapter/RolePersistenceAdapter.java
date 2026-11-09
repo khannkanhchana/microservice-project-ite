@@ -48,6 +48,13 @@ public class RolePersistenceAdapter implements RoleRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Role> findByIds(Collection<Long> roleIds) {
+        if (roleIds.isEmpty()) return List.of();
+        return repository.findAllById(roleIds).stream().map(RolePersistenceAdapter::toDomain).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return repository.existsByNameIgnoreCase(name);
     }

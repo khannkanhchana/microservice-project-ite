@@ -14,6 +14,7 @@ public interface PermissionRepository {
     Permission save(Permission permission);
     Optional<Permission> findByUuid(UUID permissionUuid);
     List<Permission> findByUuids(Collection<UUID> permissionUuids);
+    List<Permission> findByIds(Collection<Long> permissionIds);
     boolean existsByName(String name);
     PageResult<PermissionResult> search(PermissionFilterQuery query);
 }

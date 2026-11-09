@@ -1,4 +1,7 @@
-plugins { id 'spring-boot-common-conventions' }
+
+plugins {
+    id 'spring-boot-common-conventions'
+}
 
 description = 'IAM Spring Boot application and runtime wiring'
 
@@ -13,9 +16,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.postgresql:postgresql'
+
+    // JTE Spring Boot 4 integration
+    implementation 'gg.jte:jte-spring-boot-starter-4:3.2.5'
+
     testImplementation libs.spring.boot.starter.test.webmvc
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.security:spring-security-oauth2-jose'
 }
 
 tasks.named('bootRun') {
-    workingDir rootProject.projectDir
+    workingDir projectDir.parentFile
 }

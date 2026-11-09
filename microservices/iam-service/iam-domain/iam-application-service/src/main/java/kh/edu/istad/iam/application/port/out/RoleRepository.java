@@ -14,6 +14,7 @@ public interface RoleRepository {
     Role save(Role role);
     Optional<Role> findByUuid(UUID roleUuid);
     List<Role> findByUuids(Collection<UUID> roleUuids);
+    List<Role> findByIds(Collection<Long> roleIds);
     boolean existsByName(String name);
     PageResult<RoleSummary> search(RoleFilterQuery query);
 }
