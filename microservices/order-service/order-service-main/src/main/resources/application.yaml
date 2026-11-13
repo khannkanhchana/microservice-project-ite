@@ -1,4 +1,13 @@
+
 spring:
+  #add kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: order-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   #add r2dbc
   r2dbc:
     url: r2dbc:postgresql://localhost:9543/db_order

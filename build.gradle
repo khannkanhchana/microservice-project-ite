@@ -7,6 +7,10 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven {
+        name = 'buf'
+        url = 'https://buf.build/gen/maven'
+    }
 }
 
 dependencies {

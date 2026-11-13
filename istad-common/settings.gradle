@@ -7,14 +7,20 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+
     repositories {
         mavenCentral()
+
+        maven {
+            name = 'buf'
+            url = uri('https://buf.build/gen/maven')
+        }
     }
 
     versionCatalogs {
         libs {
-            from(
-                    files("../gradle/libs.versions.toml"))
+            from(files("../gradle/libs.versions.toml"))
         }
     }
 }

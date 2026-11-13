@@ -4,12 +4,16 @@ plugins {
 }
 
 dependencies {
+    // add kafka spring boot
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:3.2.0'
     implementation 'kh.edu.istad:customer-domain-core'
     implementation 'kh.edu.istad:customer-application-service'
     implementation 'kh.edu.istad:customer-service-message'
     implementation 'kh.edu.istad:customer-service-persistence'
     implementation 'kh.edu.istad:customer-service-restapi'
+    implementation 'kh.edu.istad:customer-service-message'
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 

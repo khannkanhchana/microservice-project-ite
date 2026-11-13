@@ -7,6 +7,10 @@ ext {
 }
 
 dependencies {
+    //add kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
     implementation 'com.scalar.maven:scalar:0.4.4'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:3.1.1'

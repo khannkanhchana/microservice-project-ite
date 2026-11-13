@@ -1,6 +1,8 @@
-plugins{
+plugins {
     id 'spring-common-conventions'
 }
+
 dependencies {
     api('kh.edu.istad:customer-application-service')
+    implementation 'org.springframework.kafka:spring-kafka'
 }
