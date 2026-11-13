@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Component
 public class FederatedUserProvisioner {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FederatedUserProvisioner.class);
     private final ObjectProvider<FindOrProvisionFederatedUserUseCase> findOrProvision;
     private final ObjectProvider<LinkIdentityUseCase> linkIdentity;
     private final ObjectProvider<GetUserUseCase> getUser;
@@ -71,8 +72,11 @@ public class FederatedUserProvisioner {
                     .map(SimpleGrantedAuthority::new).map(GrantedAuthority.class::cast).toList();
             return new ProvisionedUser(user, authorities);
         } catch (OAuth2AuthenticationException exception) {
+            log.warn("{} sign-in rejected for subject {}: {}", provider, subject,
+                    exception.getError().getDescription(), exception.getCause());
             throw exception;
         } catch (RuntimeException exception) {
+            log.error("{} sign-in failed for subject {}", provider, subject, exception);
             throw authenticationError("The federated account could not be resolved.", exception);
         }
     }

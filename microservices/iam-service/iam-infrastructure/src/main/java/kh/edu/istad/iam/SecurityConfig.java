@@ -145,6 +145,7 @@ public class SecurityConfig {
                                 "/register",
                                 "/api/auth/register",
                                 "/oauth2/authorization/**",
+                                "/login/social/**",
                                 "/login/oauth2/code/**",
                                 "/error",
                                 "/favicon.ico"
@@ -164,6 +165,9 @@ public class SecurityConfig {
 
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
+                        .tokenEndpoint(token -> token
+                                .accessTokenResponseClient(
+                                        kh.edu.istad.iam.infrastructure.social.SocialTokenResponseClient.create()))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(federatedOAuth2UserService)
                                 .oidcUserService(federatedOidcUserService)

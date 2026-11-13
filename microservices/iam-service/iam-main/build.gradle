@@ -26,5 +26,7 @@ dependencies {
 }
 
 tasks.named('bootRun') {
-    workingDir projectDir.parentFile
+    // Run from the repository root so gg.jte.template-location
+    // (microservices/iam-service/iam-web/src/main/jte) and the root .env resolve.
+    workingDir rootProject.projectDir.parentFile.parentFile
 }

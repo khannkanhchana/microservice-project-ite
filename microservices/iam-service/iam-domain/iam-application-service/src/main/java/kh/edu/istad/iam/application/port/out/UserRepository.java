@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public interface UserRepository {
     User save(User user);
+    Optional<User> findById(Long id);
     Optional<User> findByUuid(UUID userUuid);
     Optional<User> findByUsernameOrEmail(String usernameOrEmail);
     boolean existsByUsername(String username);

@@ -107,3 +107,6 @@ gg:
 
 server:
   port: 9000
+  # Honour X-Forwarded-Proto/Host from ngrok so redirects stay on https://<ngrok-domain>
+  # (required for the Telegram callback, which is registered on the ngrok URL).
+  forward-headers-strategy: framework

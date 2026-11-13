@@ -29,7 +29,25 @@ public class UserPersistenceAdapter implements UserRepository {
 
     @Override
     public User save(User user) {
-        return toDomain(repository.save(toEntity(user)));
+        var entity = toEntity(user);
+        if (entity.getId() != null) {
+            // Domain objects carry the version after their changes; JPA @Version expects the version as loaded.
+            long current = repository.findById(entity.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("User does not exist"))
+                    .getVersion();
+            if (user.getVersion() <= current) {
+                throw new org.springframework.orm.ObjectOptimisticLockingFailureException(
+                        kh.edu.istad.iam.persistence.entity.User.class, entity.getId());
+            }
+            entity.setVersion(current);
+        }
+        return toDomain(repository.save(entity));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findById(Long id) {
+        return repository.findById(id).map(UserPersistenceAdapter::toDomain);
     }
 
     @Override

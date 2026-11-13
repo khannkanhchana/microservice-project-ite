@@ -80,6 +80,7 @@ public class WebPageController {
                         Model model, HttpServletRequest request) {
         prepare(model, request);
         model.addAttribute("hasError", error != null);
+        model.addAttribute("errorMessage", error == null ? null : socialLoginError(request));
         model.addAttribute("registered", registered != null);
         model.addAttribute("socialProviders", List.of("google", "github", "facebook", "telegram"));
         return "login";
@@ -257,6 +258,20 @@ public class WebPageController {
         model.addAttribute("state", state == null ? "" : state);
         model.addAttribute("scopes", scope == null ? List.of() : Arrays.asList(scope.split(" ")));
         return "consent";
+    }
+
+    /** Social sign-in failures carry a user-facing reason; password failures keep the generic message. */
+    private static String socialLoginError(HttpServletRequest request) {
+        var session = request.getSession(false);
+        if (session == null) return null;
+        Object exception = session.getAttribute(org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION);
+        // OAuth2AuthenticationException lives in spring-security-oauth2-core, which this module does not depend on.
+        if (exception instanceof org.springframework.security.core.AuthenticationException auth
+                && auth.getClass().getName().startsWith("org.springframework.security.oauth2.")) {
+            String description = auth.getMessage();
+            return description == null || description.isBlank() ? "Social sign-in failed. Please try again." : description;
+        }
+        return null;
     }
 
     private void prepare(Model model, HttpServletRequest request) {

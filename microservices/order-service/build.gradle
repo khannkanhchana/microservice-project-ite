@@ -1,1 +1,13 @@
 plugins { id 'base' }
+
+// istad-common-grpc depends on Buf-generated SDKs (build.buf.gen:*), which are
+// resolved with the consuming project's repositories, so every module needs Buf.
+subprojects {
+    repositories {
+        mavenCentral()
+        maven {
+            name = 'buf'
+            url = 'https://buf.build/gen/maven'
+        }
+    }
+}

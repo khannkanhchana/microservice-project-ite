@@ -5,6 +5,7 @@
 @param java.util.Map<String, String> messages
 @param String lang
 @param boolean hasError
+@param String errorMessage
 @param boolean registered
 @param java.util.List<String> socialProviders
 @param org.springframework.security.web.csrf.CsrfToken csrf
@@ -580,7 +581,7 @@
 
             @if (hasError)
                 <div class="alert alert-error" role="alert">
-                    ✕ &nbsp; ${messages.get("login.invalid")}
+                    ✕ &nbsp; ${errorMessage != null ? errorMessage : messages.get("login.invalid")}
                 </div>
             @endif
 
@@ -657,7 +658,7 @@
                     @for (String provider : socialProviders)
                         <a
                                 class="social-btn"
-                                href="/oauth2/authorization/${provider}">
+                                href="/login/social/${provider}">
 
                             <span class="social-symbol">✦</span>
 

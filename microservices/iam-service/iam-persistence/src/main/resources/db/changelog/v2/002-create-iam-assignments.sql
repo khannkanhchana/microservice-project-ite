@@ -1,6 +1,6 @@
-CREATE SEQUENCE iam_assignment_id_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE IF NOT EXISTS iam_assignment_id_seq START WITH 1 INCREMENT BY 1;
 
-CREATE TABLE user_roles (
+CREATE TABLE IF NOT EXISTS user_roles (
     id BIGINT NOT NULL DEFAULT nextval('iam_assignment_id_seq') PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id),
     role_id BIGINT NOT NULL REFERENCES roles(id),
@@ -14,7 +14,7 @@ CREATE TABLE user_roles (
     CONSTRAINT ck_user_roles_revocation CHECK (revoked_at IS NULL OR revoked_at >= assigned_at)
 );
 
-CREATE TABLE role_perms (
+CREATE TABLE IF NOT EXISTS role_perms (
     id BIGINT NOT NULL DEFAULT nextval('iam_assignment_id_seq') PRIMARY KEY,
     role_id BIGINT NOT NULL REFERENCES roles(id),
     permission_id BIGINT NOT NULL REFERENCES permissions(id),
@@ -28,7 +28,7 @@ CREATE TABLE role_perms (
     CONSTRAINT ck_role_perms_revocation CHECK (revoked_at IS NULL OR revoked_at >= assigned_at)
 );
 
-CREATE TABLE user_perms (
+CREATE TABLE IF NOT EXISTS user_perms (
     id BIGINT NOT NULL DEFAULT nextval('iam_assignment_id_seq') PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id),
     permission_id BIGINT NOT NULL REFERENCES permissions(id),
@@ -43,6 +43,6 @@ CREATE TABLE user_perms (
     CONSTRAINT ck_user_perms_revocation CHECK (revoked_at IS NULL OR revoked_at >= assigned_at)
 );
 
-CREATE INDEX ix_user_roles_user ON user_roles (user_id, role_id);
-CREATE INDEX ix_role_perms_role ON role_perms (role_id, permission_id);
-CREATE INDEX ix_user_perms_user ON user_perms (user_id, permission_id);
+CREATE INDEX IF NOT EXISTS ix_user_roles_user ON user_roles (user_id, role_id);
+CREATE INDEX IF NOT EXISTS ix_role_perms_role ON role_perms (role_id, permission_id);
+CREATE INDEX IF NOT EXISTS ix_user_perms_user ON user_perms (user_id, permission_id);

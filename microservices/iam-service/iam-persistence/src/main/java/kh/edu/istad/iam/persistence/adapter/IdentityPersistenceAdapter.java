@@ -25,7 +25,19 @@ public class IdentityPersistenceAdapter implements IdentityRepository {
 
     @Override
     public Identity save(Identity identity) {
-        return toDomain(identities.save(toEntity(identity)));
+        var entity = toEntity(identity);
+        if (entity.getId() != null) {
+            // Domain objects carry the version after their changes; JPA @Version expects the version as loaded.
+            long current = identities.findById(entity.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Identity does not exist"))
+                    .getVersion();
+            if (identity.version() <= current) {
+                throw new org.springframework.orm.ObjectOptimisticLockingFailureException(
+                        kh.edu.istad.iam.persistence.entity.Identity.class, entity.getId());
+            }
+            entity.setVersion(current);
+        }
+        return toDomain(identities.save(entity));
     }
 
     @Override
