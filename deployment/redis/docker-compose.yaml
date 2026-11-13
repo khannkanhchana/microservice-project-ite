@@ -1,0 +1,23 @@
+# Redis for iam-service: HTTP login sessions (Spring Session) and the users' active device sessions.
+volumes:
+  ite-redis-vol:
+    driver: local
+networks:
+  ite-net:
+    external: true
+services:
+  ite-redis:
+    container_name: ite-redis
+    image: redis:8.2-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ite-redis-vol:/data
+    networks:
+      - ite-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5

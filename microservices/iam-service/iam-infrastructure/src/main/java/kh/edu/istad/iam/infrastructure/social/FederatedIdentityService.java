@@ -8,6 +8,8 @@ import kh.edu.istad.iam.application.result.IdentityResult;
 import kh.edu.istad.iam.application.usecase.FindOrProvisionFederatedUserUseCase;
 import kh.edu.istad.iam.application.usecase.GetUserAuthoritiesUseCase;
 import kh.edu.istad.iam.application.usecase.LinkIdentityUseCase;
+import kh.edu.istad.iam.application.usecase.ListUserIdentitiesUseCase;
+import kh.edu.istad.iam.application.usecase.UnlinkIdentityUseCase;
 import kh.edu.istad.iam.domain.Identity;
 import kh.edu.istad.iam.domain.User;
 import org.springframework.beans.factory.ObjectProvider;
@@ -36,7 +38,8 @@ import java.util.stream.Collectors;
  * placeholders are used for the columns the local user model requires.
  */
 @Service
-public class FederatedIdentityService implements FindOrProvisionFederatedUserUseCase, LinkIdentityUseCase {
+public class FederatedIdentityService implements FindOrProvisionFederatedUserUseCase, LinkIdentityUseCase,
+        ListUserIdentitiesUseCase, UnlinkIdentityUseCase {
     private static final int USERNAME_MAX = 50;
     private static final int NAME_MAX = 100;
     private static final int URL_MAX = 500;
@@ -100,6 +103,30 @@ public class FederatedIdentityService implements FindOrProvisionFederatedUserUse
             return toResult(identities.save(refresh(identity, command, now)), user.getUuid());
         }
         return toResult(link(user, command, now), user.getUuid());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<IdentityResult> execute(UUID userUuid) {
+        return identities.findActiveByUserUuid(userUuid).stream()
+                .map(identity -> toResult(identity, userUuid)).toList();
+    }
+
+    @Override
+    @Transactional
+    public void execute(UUID userUuid, UUID identityUuid, Instant at, String actor) {
+        Identity identity = identities.findByUuid(identityUuid)
+                .filter(found -> !found.deleted())
+                .orElseThrow(() -> new IllegalArgumentException("Linked account was not found."));
+        User user = users.findByUuid(userUuid).orElseThrow(() -> new IllegalArgumentException("User was not found."));
+        if (!identity.userId().equals(user.getId())) {
+            throw new IllegalArgumentException("Linked account was not found.");
+        }
+        int methods = identities.countActiveSignInMethods(userUuid);
+        if (methods <= 1) {
+            throw new IllegalStateException("Set a password or link another account before unlinking your only sign-in method.");
+        }
+        identities.save(identity.unlink(at, actor, methods));
     }
 
     private Identity link(User user, FederatedIdentityCommand command, Instant now) {

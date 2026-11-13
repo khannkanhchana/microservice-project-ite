@@ -94,3 +94,44 @@ databaseChangeLog:
             path: 007-drop-legacy-joins.sql
             relativeToChangelogFile: true
             splitStatements: true
+
+  - changeSet:
+      id: iam-v2-account-security
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: account_sessions
+      changes:
+        - sqlFile:
+            path: 008-create-account-security.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-account-sessions-to-redis
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - tableExists:
+            tableName: account_sessions
+      changes:
+        - sqlFile:
+            path: 009-move-account-sessions-to-redis.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+
+  - changeSet:
+      id: iam-v2-admin-console
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: audit_logs
+      changes:
+        - sqlFile:
+            path: 010-admin-console.sql
+            relativeToChangelogFile: true
+            splitStatements: true

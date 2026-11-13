@@ -1,6 +1,6 @@
 plugins { id 'spring-common-conventions' }
 
-description = 'IAM web pages, web controllers, and internationalization'
+description = 'IAM web pages, web controllers, internationalization, and the iam-web React SPA'
 
 dependencies {
     implementation project(':iam-domain:iam-application-service')
@@ -8,4 +8,42 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'gg.jte:jte-spring-boot-starter-4:3.2.4'
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// React SPA (frontend/) — `npm run build` writes index.html + assets/ to src/main/resources/static, so
+// iam-service serves it at http://localhost:9000/ (sign-in stays on the JTE page /login). Skip with -PskipFrontend (e.g. when Node.js is not installed).
+// ---------------------------------------------------------------------------------------------------------
+def frontendDir = file('frontend')
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def npm = isWindows ? 'npm.cmd' : 'npm'
+def skipFrontend = project.hasProperty('skipFrontend')
+
+tasks.register('npmInstall', Exec) {
+    group = 'frontend'
+    description = 'Installs the React SPA dependencies.'
+    workingDir frontendDir
+    commandLine npm, 'install', '--no-audit', '--no-fund'
+    inputs.file(new File(frontendDir, 'package.json'))
+    inputs.file(new File(frontendDir, 'package-lock.json'))
+    outputs.dir(new File(frontendDir, 'node_modules'))
+    onlyIf { !skipFrontend }
+}
+
+tasks.register('npmBuild', Exec) {
+    group = 'frontend'
+    description = 'Builds the React SPA into src/main/resources/static.'
+    dependsOn 'npmInstall'
+    workingDir frontendDir
+    commandLine npm, 'run', 'build'
+    inputs.dir(new File(frontendDir, 'src'))
+    inputs.dir(new File(frontendDir, 'public'))
+    inputs.files(new File(frontendDir, 'index.html'), new File(frontendDir, 'vite.config.js'),
+            new File(frontendDir, 'package.json'))
+    outputs.dir(file('src/main/resources/static'))
+    onlyIf { !skipFrontend }
+}
+
+tasks.named('processResources') {
+    dependsOn 'npmBuild'
 }

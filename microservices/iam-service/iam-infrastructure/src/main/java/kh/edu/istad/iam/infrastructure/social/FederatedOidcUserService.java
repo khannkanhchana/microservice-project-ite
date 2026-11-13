@@ -1,6 +1,7 @@
 package kh.edu.istad.iam.infrastructure.social;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -37,6 +38,11 @@ public class FederatedOidcUserService extends org.springframework.security.oauth
 
         List<GrantedAuthority> authorities = new ArrayList<>(provisioned.authorities());
         authorities.add(new OidcUserAuthority(request.getIdToken()));
+        // Spring Security 7 records how and when a user authenticated as a FactorGrantedAuthority; the
+        // authorization server reads it for the ID token's auth_time claim. OAuth2LoginAuthenticationProvider
+        // adds it for plain OAuth2 logins (GitHub, Facebook), but the OIDC provider (Google, Telegram) does not,
+        // so without it /oauth2/token fails with "authenticationTime cannot be null".
+        authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.AUTHORIZATION_CODE_AUTHORITY));
         return new DefaultOidcUser(authorities, request.getIdToken(), new OidcUserInfo(claims), "iam_user_uuid");
     }
 }

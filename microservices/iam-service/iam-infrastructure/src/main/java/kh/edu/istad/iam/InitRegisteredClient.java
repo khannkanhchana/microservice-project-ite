@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -29,10 +30,20 @@ public class InitRegisteredClient {
 
     private final RegisteredClientRepository registeredClientRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final kh.edu.istad.iam.infrastructure.admin.SystemSettingsService systemSettings;
 
     private static final String OIDC_CLIENT_ID = "oidc-client";
     private static final String OIDC_CLIENT_SECRET = "secret";
     private final PasswordEncoder clientSecretEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+    private static final String IAM_WEB_CLIENT_ID = "iam-web";
+
+    @Value("${iam.web.base-url:http://localhost:9000}")
+    private String iamWebBaseUrl;
+
+    /** Vite dev server (npm run dev); also allowed as a redirect target. Empty to disable. */
+    @Value("${iam.web.dev-url:http://localhost:5173}")
+    private String iamWebDevUrl;
 
     @Value("${iam.authorization-server.dcr.registrar-client-id:registrar-client}")
     private String registrarClientId;
@@ -92,6 +103,8 @@ public class InitRegisteredClient {
             logger.info("Verified the local Postman OAuth client secret.");
         }
 
+        registerIamWebClient();
+
         if (registrarClientSecret != null && !registrarClientSecret.isBlank()) {
             var existingRegistrarClient = registeredClientRepository.findByClientId(registrarClientId);
             RegisteredClient registrarClient = RegisteredClient.withId(UUID.randomUUID().toString())
@@ -111,6 +124,54 @@ public class InitRegisteredClient {
                         registrarClient.getClientSecret(), existingRegistrarClient.getId());
                 logger.warn("Repaired the configured registrar OAuth client secret encoding.");
             }
+        }
+    }
+
+    /**
+     * The iam-web React SPA: a public client (no secret) using authorization code + PKCE. First-party,
+     * so no consent screen. Public clients do not receive refresh tokens; the SPA re-authorizes silently
+     * against the IAM browser session when its access token expires.
+     */
+    private void registerIamWebClient() {
+        String baseUrl = iamWebBaseUrl.endsWith("/") ? iamWebBaseUrl.substring(0, iamWebBaseUrl.length() - 1) : iamWebBaseUrl;
+        RegisteredClient.Builder builder = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId(IAM_WEB_CLIENT_ID)
+                .clientName("IAM Web")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUri(baseUrl + "/callback")
+                .postLogoutRedirectUri(baseUrl + "/")
+                .scope(OidcScopes.OPENID)
+                .scope(OidcScopes.PROFILE)
+                .scope(OidcScopes.EMAIL)
+                .scope(OidcScopes.PHONE)
+                .scope(OidcScopes.ADDRESS)
+                .clientSettings(ClientSettings.builder()
+                        .requireProofKey(true)
+                        .requireAuthorizationConsent(false)
+                        .build())
+                // Lifetimes follow the System Configuration token policy (Admin > Settings).
+                .tokenSettings(systemSettings.tokenSettings(TokenSettings.builder()
+                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
+                        .build()));
+        for (String url : List.of(baseUrl, iamWebDevUrl == null ? "" : iamWebDevUrl.trim())) {
+            if (url.isEmpty()) continue;
+            String base = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+            builder.redirectUri(base + "/callback").postLogoutRedirectUri(base + "/");
+            if (base.contains("localhost")) {
+                String loopback = base.replace("localhost", "127.0.0.1");
+                builder.redirectUri(loopback + "/callback").postLogoutRedirectUri(loopback + "/");
+            }
+        }
+
+        RegisteredClient existing = registeredClientRepository.findByClientId(IAM_WEB_CLIENT_ID);
+        if (existing == null) {
+            registeredClientRepository.save(builder.build());
+            logger.info("Registered the iam-web public OAuth client for {}.", baseUrl);
+        } else {
+            // Keep the stored id so existing authorizations stay valid, but refresh URIs and settings.
+            registeredClientRepository.save(builder.id(existing.getId())
+                    .clientIdIssuedAt(existing.getClientIdIssuedAt()).build());
         }
     }
 

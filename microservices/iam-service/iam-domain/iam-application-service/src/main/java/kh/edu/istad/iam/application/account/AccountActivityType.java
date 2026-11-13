@@ -1,0 +1,23 @@
+package kh.edu.istad.iam.application.account;
+
+/** Security-relevant changes shown to the user on the Account Activity page. */
+public enum AccountActivityType {
+    PROFILE_UPDATED,
+    USERNAME_CHANGED,
+    EMAIL_CHANGED,
+    PHONE_CHANGED,
+    PICTURE_UPDATED,
+    PICTURE_REMOVED,
+    PASSWORD_CHANGED,
+    PASSWORD_RESET_REQUESTED,
+    PASSWORD_RESET,
+    IDENTITY_LINKED,
+    IDENTITY_UNLINKED,
+    SESSION_REVOKED,
+    OTHER_SESSIONS_REVOKED,
+    ACCOUNT_DEACTIVATED,
+    ACCOUNT_UNLOCKED_BY_ADMIN,
+    PASSWORD_RESET_LINK_SENT,
+    PASSWORD_SET_BY_ADMIN,
+    ACCOUNT_STATUS_CHANGED_BY_ADMIN
+}

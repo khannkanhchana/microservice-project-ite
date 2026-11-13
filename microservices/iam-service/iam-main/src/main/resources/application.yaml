@@ -86,7 +86,39 @@ spring:
     driver-class-name: ${spring.datasource.driver-class-name}
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  # Redis (deployment/redis): HTTP login sessions via Spring Session, and active device sessions.
+  data:
+    redis:
+      host: ${IAM_REDIS_HOST:localhost}
+      port: ${IAM_REDIS_PORT:6379}
+      password: ${IAM_REDIS_PASSWORD:}
+  session:
+    timeout: ${IAM_SESSION_TIMEOUT:12h}
+    data:
+      redis:
+        namespace: iam:http-session
+        flush-mode: on-save
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+
 iam:
+  web:
+    # The iam-web React SPA (iam-web/frontend), built into this service and served at / (static/index.html).
+    # Registered as the public PKCE client "iam-web".
+    base-url: ${IAM_WEB_BASE_URL:http://localhost:9000}
+    # Vite dev server (npm run dev) — also a valid redirect target while developing the UI.
+    dev-url: ${IAM_WEB_DEV_URL:http://localhost:5173}
+    allowed-origins: ${IAM_WEB_ALLOWED_ORIGINS:http://localhost:9000,http://127.0.0.1:9000,http://localhost:5173,http://127.0.0.1:5173}
+  admin:
+    # Usernames or emails that get the ADMIN role at startup (comma-separated), e.g. IAM_BOOTSTRAP_ADMINS=alice
+    bootstrap-users: ${IAM_BOOTSTRAP_ADMINS:}
+  account:
+    geoip:
+      # Resolve session/login locations through ip-api.com. Off by default: it sends client IPs to a third party.
+      enabled: ${IAM_GEOIP_ENABLED:false}
   authorization-server:
     dcr:
       registrar-client-id: ${IAM_DCR_REGISTRAR_CLIENT_ID:registrar-client}

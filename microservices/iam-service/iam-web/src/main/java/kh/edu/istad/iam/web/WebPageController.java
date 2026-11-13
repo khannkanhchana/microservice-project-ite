@@ -2,6 +2,7 @@ package kh.edu.istad.iam.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import kh.edu.istad.iam.application.admin.SystemSettingsUseCase;
 import kh.edu.istad.iam.application.command.ChangePasswordCommand;
 import kh.edu.istad.iam.application.command.RegisterUserCommand;
 import kh.edu.istad.iam.application.command.UpdateUserProfileCommand;
@@ -23,6 +24,29 @@ import java.util.*;
 
 @Controller
 public class WebPageController {
+    /** System Configuration: registration, password and social sign-in policies (Admin > Settings). */
+    @org.springframework.beans.factory.annotation.Autowired
+    private ObjectProvider<SystemSettingsUseCase> policies;
+
+    private boolean registrationAllowed() {
+        SystemSettingsUseCase settings = policies.getIfAvailable();
+        return settings == null || settings.get().authentication().allowSelfRegistration();
+    }
+
+    private List<String> passwordPolicyViolations(String password) {
+        SystemSettingsUseCase settings = policies.getIfAvailable();
+        return settings == null ? List.of() : settings.passwordViolations(password);
+    }
+
+    private List<String> enabledSocialProviders() {
+        SystemSettingsUseCase settings = policies.getIfAvailable();
+        List<String> all = List.of("google", "github", "facebook", "telegram");
+        if (settings == null) return all;
+        List<String> enabled = settings.get().authentication().enabledSocialProviders();
+        return all.stream().filter(enabled::contains).toList();
+    }
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebPageController.class);
+
     private static final List<String> MESSAGE_KEYS = List.of(
             "common.logout", "common.home", "common.profile", "common.editProfile", "common.password",
             "common.linkedAccounts", "common.connectedApps", "common.save", "common.cancel", "common.back",
@@ -82,7 +106,7 @@ public class WebPageController {
         model.addAttribute("hasError", error != null);
         model.addAttribute("errorMessage", error == null ? null : socialLoginError(request));
         model.addAttribute("registered", registered != null);
-        model.addAttribute("socialProviders", List.of("google", "github", "facebook", "telegram"));
+        model.addAttribute("socialProviders", enabledSocialProviders());
         return "login";
     }
 
@@ -90,7 +114,7 @@ public class WebPageController {
     public String registerPage(Model model, HttpServletRequest request) {
         prepare(model, request);
         model.addAttribute("form", new WebForms.Registration());
-        model.addAttribute("errors", List.of());
+        model.addAttribute("errors", registrationAllowed() ? List.of() : List.of(msg("register.disabled")));
         return "register";
     }
 
@@ -109,36 +133,13 @@ public class WebPageController {
                             null, null, null, null, null, null, null, null, null, null));
                     return "redirect:/login?registered";
                 } catch (RuntimeException exception) {
-                    errors.add(msg("common.error"));
+                    errors.add(registrationError(exception));
                 }
             }
         }
         model.addAttribute("form", form);
         model.addAttribute("errors", errors);
         return "register";
-    }
-
-    @GetMapping("/")
-    public String index(Authentication authentication, Model model, HttpServletRequest request) {
-        prepare(model, request);
-        UUID uuid = userUuid(authentication);
-        if (uuid == null) {
-            model.addAttribute("pageError", msg("common.serviceUnavailable"));
-            return "index";
-        }
-        GetUserUseCase get = getUser.getIfAvailable();
-        GetUserAuthoritiesUseCase getAuthorities = authorities.getIfAvailable();
-        if (get == null || getAuthorities == null) {
-            model.addAttribute("pageError", msg("common.serviceUnavailable"));
-            return "index";
-        }
-        try {
-            model.addAttribute("user", get.execute(uuid));
-            model.addAttribute("authorities", getAuthorities.execute(uuid));
-        } catch (RuntimeException exception) {
-            model.addAttribute("pageError", msg("common.error"));
-        }
-        return "index";
     }
 
     @GetMapping("/profile/edit")
@@ -282,6 +283,10 @@ public class WebPageController {
         model.addAttribute("lang", locale.getLanguage());
         Object csrf = request.getAttribute(CsrfToken.class.getName());
         if (csrf == null) csrf = request.getAttribute("_csrf");
+        // Resolve the (deferred) CSRF token now, before the template starts streaming. Sessions are stored in
+        // Redis by Spring Session, which writes its SESSION cookie when the response is committed; a session
+        // created mid-render would be saved without the browser ever receiving its cookie.
+        if (csrf instanceof CsrfToken token) token.getToken();
         model.addAttribute("csrf", csrf);
     }
 
@@ -292,15 +297,35 @@ public class WebPageController {
             errors.add(msg("validation.required"));
         }
         if (form.getEmail() != null && !form.getEmail().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) errors.add(msg("validation.email"));
-        if (form.getPassword() != null && form.getPassword().length() < 8) errors.add(msg("validation.passwordLength"));
+        if (form.getUsername() != null && form.getUsername().trim().length() > 50) errors.add(msg("validation.usernameLength"));
+        if (!registrationAllowed()) errors.add(msg("register.disabled"));
+        if (form.getPassword() != null) errors.addAll(passwordPolicyViolations(form.getPassword()));
         if (!Objects.equals(form.getPassword(), form.getConfirmPassword())) errors.add(msg("validation.passwordMismatch"));
         return errors;
+    }
+
+    /** Turns a registration failure into a message the user can act on, instead of a generic error. */
+    private String registrationError(RuntimeException exception) {
+        String detail = exception.getMessage() == null ? "" : exception.getMessage().toLowerCase(Locale.ROOT);
+        if (exception.getClass().getSimpleName().equals("DataIntegrityViolationException")) {
+            // Unique constraint hit by a concurrent registration.
+            if (detail.contains("email")) return msg("register.emailTaken");
+            if (detail.contains("username")) return msg("register.usernameTaken");
+        }
+        if (exception instanceof IllegalArgumentException) {
+            if (detail.contains("username") && detail.contains("in use")) return msg("register.usernameTaken");
+            if (detail.contains("email") && detail.contains("in use")) return msg("register.emailTaken");
+            if (detail.contains("email")) return msg("validation.email");
+            if (!detail.isBlank()) return exception.getMessage();
+        }
+        log.warn("Self-registration failed", exception);
+        return msg("common.error");
     }
 
     private List<String> validatePassword(WebForms.Password form) {
         List<String> errors = new ArrayList<>();
         if (blank(form.getCurrentPassword()) || blank(form.getNewPassword()) || blank(form.getConfirmPassword())) errors.add(msg("validation.required"));
-        if (form.getNewPassword() != null && form.getNewPassword().length() < 8) errors.add(msg("validation.passwordLength"));
+        if (form.getNewPassword() != null) errors.addAll(passwordPolicyViolations(form.getNewPassword()));
         if (!Objects.equals(form.getNewPassword(), form.getConfirmPassword())) errors.add(msg("validation.passwordMismatch"));
         return errors;
     }

@@ -1,0 +1,95 @@
+@import 'tailwindcss';
+
+/* Semantic color tokens, switched for dark mode. Components use bg-surface, text-muted, etc. */
+:root {
+  --c-bg: #f6f7f9;
+  --c-surface: #ffffff;
+  --c-surface-2: #f1f3f6;
+  --c-border: #e3e6eb;
+  --c-text: #111827;
+  --c-muted: #5b6474;
+  --c-subtle: #8a93a3;
+  --c-primary: #2563eb;
+  --c-primary-hover: #1d4ed8;
+  --c-primary-soft: #e8efff;
+  --c-on-primary: #ffffff;
+  --c-danger: #dc2626;
+  --c-danger-hover: #b91c1c;
+  --c-danger-soft: #fdecec;
+  --c-success: #15803d;
+  --c-success-soft: #e7f6ec;
+  --c-warning: #b45309;
+  --c-warning-soft: #fef4e2;
+  --c-ring: rgb(37 99 235 / 0.35);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --c-bg: #0d1117;
+    --c-surface: #151b23;
+    --c-surface-2: #1c2430;
+    --c-border: #2a3341;
+    --c-text: #e6e9ef;
+    --c-muted: #a0a9b8;
+    --c-subtle: #737d8c;
+    --c-primary: #5b8def;
+    --c-primary-hover: #7aa3f3;
+    --c-primary-soft: #1a2a4a;
+    --c-on-primary: #0d1117;
+    --c-danger: #f26d6d;
+    --c-danger-hover: #f58b8b;
+    --c-danger-soft: #3a1d1f;
+    --c-success: #4cc27a;
+    --c-success-soft: #15301f;
+    --c-warning: #e0a44a;
+    --c-warning-soft: #33270f;
+    --c-ring: rgb(91 141 239 / 0.45);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-line: var(--c-border);
+  --color-ink: var(--c-text);
+  --color-muted: var(--c-muted);
+  --color-subtle: var(--c-subtle);
+  --color-primary: var(--c-primary);
+  --color-primary-hover: var(--c-primary-hover);
+  --color-primary-soft: var(--c-primary-soft);
+  --color-on-primary: var(--c-on-primary);
+  --color-danger: var(--c-danger);
+  --color-danger-hover: var(--c-danger-hover);
+  --color-danger-soft: var(--c-danger-soft);
+  --color-success: var(--c-success);
+  --color-success-soft: var(--c-success-soft);
+  --color-warning: var(--c-warning);
+  --color-warning-soft: var(--c-warning-soft);
+  --color-ring: var(--c-ring);
+  --font-sans: 'Inter', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Khmer script needs a Khmer-first font stack and a little more line height. */
+html[lang='km'] {
+  --font-sans: 'Kantumruy Pro', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.7;
+}
+
+body {
+  background: var(--c-bg);
+  color: var(--c-text);
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}

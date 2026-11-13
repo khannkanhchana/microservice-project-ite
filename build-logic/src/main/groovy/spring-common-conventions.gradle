@@ -75,3 +75,9 @@ dependencies {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
+
+// Keep method parameter names in bytecode: Spring MVC binds @PathVariable/@RequestParam by name and fails with
+// "parameter name information not available" when classes are built without it (IDE builds add it; Gradle doesn't).
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add('-parameters')
+}

@@ -1,6 +1,9 @@
 package kh.edu.istad.iam.restapi;
 
+import kh.edu.istad.iam.application.admin.SystemSettingsUseCase;
 import jakarta.validation.Valid;
+import kh.edu.istad.iam.application.account.AccountActivityType;
+import kh.edu.istad.iam.application.account.AccountSelfServiceUseCase;
 import kh.edu.istad.iam.application.command.*;
 import kh.edu.istad.iam.domain.AssignmentEffect;
 import kh.edu.istad.iam.application.query.SortDirection;
@@ -25,6 +28,15 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api")
 public class UserController {
+
+    /** System Configuration: registration and password policies (Admin > Settings). */
+    @org.springframework.beans.factory.annotation.Autowired
+    private ObjectProvider<SystemSettingsUseCase> policies;
+
+    private void requireValidPassword(String password) {
+        SystemSettingsUseCase settings = policies.getIfAvailable();
+        if (settings != null) settings.requireValidPassword(password);
+    }
     private final ObjectProvider<RegisterUserUseCase> register;
     private final ObjectProvider<CreateUserUseCase> create;
     private final ObjectProvider<GetUserUseCase> get;
@@ -44,6 +56,7 @@ public class UserController {
     private final ObjectProvider<GetUserAuthoritiesUseCase> authorities;
     private final ObjectProvider<ListUserIdentitiesUseCase> identities;
     private final ObjectProvider<UnlinkIdentityUseCase> unlinkIdentity;
+    private final ObjectProvider<AccountSelfServiceUseCase> account;
 
     public UserController(ObjectProvider<RegisterUserUseCase> register, ObjectProvider<CreateUserUseCase> create,
                           ObjectProvider<GetUserUseCase> get, ObjectProvider<ListUsersUseCase> list,
@@ -59,19 +72,26 @@ public class UserController {
                           ObjectProvider<RevokePermissionFromUserUseCase> revokePermission,
                           ObjectProvider<GetUserAuthoritiesUseCase> authorities,
                           ObjectProvider<ListUserIdentitiesUseCase> identities,
-                          ObjectProvider<UnlinkIdentityUseCase> unlinkIdentity) {
+                          ObjectProvider<UnlinkIdentityUseCase> unlinkIdentity,
+                          ObjectProvider<AccountSelfServiceUseCase> account) {
         this.register = register; this.create = create; this.get = get; this.list = list; this.update = update;
         this.changePassword = changePassword; this.resetPassword = resetPassword; this.enable = enable;
         this.disable = disable; this.lock = lock; this.unlock = unlock; this.delete = delete;
         this.assignRoles = assignRoles; this.revokeRole = revokeRole; this.grantPermissions = grantPermissions;
         this.revokePermission = revokePermission; this.authorities = authorities; this.identities = identities;
         this.unlinkIdentity = unlinkIdentity;
+        this.account = account;
     }
 
     @PostMapping("/auth/register")
     @ResponseStatus(HttpStatus.CREATED)
     public UserResult register(@Valid @RequestBody UserRequests.Registration body) {
+        SystemSettingsUseCase settings = policies.getIfAvailable();
+        if (settings != null && !settings.get().authentication().allowSelfRegistration()) {
+            throw new IllegalArgumentException("Self-registration is disabled. Contact an administrator.");
+        }
         requireMatchingPasswords(body.password(), body.confirmPassword());
+        requireValidPassword(body.password());
         return required(register, "RegisterUserUseCase").execute(new RegisterUserCommand(
                 body.username(), body.password(), body.givenName(), body.familyName(), body.locale(), body.email(),
                 null, null, null, null, null, null, null, null, null,
@@ -80,21 +100,35 @@ public class UserController {
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public UserResponses.UserResponse me(Authentication auth) { return userResponse(subject(auth)); }
+    public UserResponses.MeResponse me(Authentication auth) { return meResponse(subject(auth)); }
 
     @PatchMapping("/me")
     @PreAuthorize("isAuthenticated()")
-    public UserResult updateMe(@Valid @RequestBody UserRequests.Profile body, Authentication auth) {
-        return update(subject(auth), body, actor(auth));
+    public UserResponses.MeResponse updateMe(@Valid @RequestBody UserRequests.Profile body, Authentication auth) {
+        UUID uuid = subject(auth);
+        AccountSelfServiceUseCase accountService = required(account, "AccountSelfServiceUseCase");
+        accountService.updateContact(uuid, body.username(), body.email(), body.phoneNumber(), actor(auth));
+        List<String> profileFields = changedProfileFields(body);
+        if (!profileFields.isEmpty()) {
+            update(uuid, body, actor(auth), null);
+            accountService.recordActivity(uuid, AccountActivityType.PROFILE_UPDATED,
+                    String.join(", ", profileFields), actor(auth));
+        }
+        return meResponse(uuid);
     }
 
     @PutMapping("/me/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("isAuthenticated()")
-    public void changeMyPassword(@Valid @RequestBody UserRequests.PasswordChange body, Authentication auth) {
+    public void changeMyPassword(@Valid @RequestBody UserRequests.PasswordChange body, Authentication auth,
+                                 @RequestAttribute(name = "iam.currentSessionId", required = false) UUID currentSession) {
         requireMatchingPasswords(body.newPassword(), body.confirmPassword());
+        requireValidPassword(body.newPassword());
         required(changePassword, "ChangePasswordUseCase").execute(
                 new ChangePasswordCommand(subject(auth), body.currentPassword(), body.newPassword(), actor(auth)));
+        if (Boolean.TRUE.equals(body.signOutOtherSessions())) {
+            required(account, "AccountSelfServiceUseCase").revokeOtherSessions(subject(auth), currentSession, actor(auth));
+        }
     }
 
     @GetMapping("/me/identities")
@@ -107,7 +141,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("isAuthenticated()")
     public void unlinkMyIdentity(@PathVariable UUID identityUuid, Authentication auth) {
-        required(unlinkIdentity, "UnlinkIdentityUseCase").execute(subject(auth), identityUuid, Instant.now(), actor(auth));
+        UUID uuid = subject(auth);
+        String provider = identityResponses(uuid).stream().filter(identity -> identity.uuid().equals(identityUuid))
+                .map(UserResponses.IdentityResponse::provider).findFirst().orElse(null);
+        required(unlinkIdentity, "UnlinkIdentityUseCase").execute(uuid, identityUuid, Instant.now(), actor(auth));
+        required(account, "AccountSelfServiceUseCase").recordActivity(uuid, AccountActivityType.IDENTITY_UNLINKED,
+                provider, actor(auth));
     }
 
     @GetMapping("/users")
@@ -127,6 +166,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('user:create')")
     public UserResult createUser(@Valid @RequestBody UserRequests.CreateUser body, Authentication auth) {
+        requireValidPassword(body.password());
         UserRequests.Address address = body.address();
         UserResult result = required(create, "CreateUserUseCase").execute(new CreateUserCommand(
                 body.username(), body.password(), body.givenName(), body.familyName(), body.locale(), body.email(),
@@ -147,7 +187,7 @@ public class UserController {
 
     @GetMapping("/users/{uuid}")
     @PreAuthorize("hasAuthority('user:read')")
-    public UserResponses.UserResponse user(@PathVariable UUID uuid) { return userResponse(uuid); }
+    public UserResponses.MeResponse user(@PathVariable UUID uuid) { return meResponse(uuid); }
 
     @PatchMapping("/users/{uuid}")
     @PreAuthorize("hasAuthority('user:update')")
@@ -181,6 +221,7 @@ public class UserController {
     @PutMapping("/users/{uuid}/password") @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('user:update')")
     public void resetPassword(@PathVariable UUID uuid, @Valid @RequestBody UserRequests.PasswordReset body, Authentication auth) {
+        requireValidPassword(body.newPassword());
         required(resetPassword, "ResetUserPasswordUseCase").execute(new ResetUserPasswordCommand(uuid, body.newPassword(), actor(auth)));
     }
 
@@ -241,11 +282,48 @@ public class UserController {
     }
 
     private UserResult update(UUID uuid, UserRequests.Profile body, String actor) {
+        return update(uuid, body, actor, body.phoneNumber());
+    }
+
+    private UserResult update(UUID uuid, UserRequests.Profile body, String actor, String phoneNumber) {
         return required(update, "UpdateUserProfileUseCase").execute(new UpdateUserProfileCommand(uuid,
                 body.givenName(), body.familyName(), body.middleName(), body.nickname(), body.gender(), body.birthdate(),
-                body.locale(), body.profileUrl(), body.pictureUrl(), body.websiteUrl(), body.phoneNumber(), body.zoneinfo(),
+                body.locale(), body.profileUrl(), body.pictureUrl(), body.websiteUrl(), phoneNumber, body.zoneinfo(),
                 body.addressStreetAddress(), body.addressLocality(), body.addressRegion(), body.addressPostalCode(),
                 body.addressCountry(), actor));
+    }
+
+    private UserResponses.MeResponse meResponse(UUID uuid) {
+        UserResult user = required(get, "GetUserUseCase").execute(uuid);
+        UserAuthoritiesResult userAuthorities = required(authorities, "GetUserAuthoritiesUseCase").execute(uuid);
+        List<UserResponses.Role> roles = userAuthorities.roles().stream()
+                .map(role -> new UserResponses.Role(role.uuid(), role.name())).toList();
+        String name = java.util.stream.Stream.of(user.givenName(), user.familyName())
+                .filter(value -> value != null && !value.isBlank()).collect(java.util.stream.Collectors.joining(" "));
+        UserResponses.Address address = new UserResponses.Address(user.addressStreetAddress(), user.addressLocality(),
+                user.addressRegion(), user.addressPostalCode(), user.addressCountry());
+        return new UserResponses.MeResponse(user.uuid(), user.username(), user.email(), user.emailVerified(), name,
+                user.givenName(), user.familyName(), user.middleName(), user.nickname(), user.gender(), user.birthdate(),
+                user.locale(), user.zoneinfo(), user.pictureUrl(), user.websiteUrl(), user.phoneNumber(),
+                user.phoneNumberVerified(), address, user.enabled(),
+                required(account, "AccountSelfServiceUseCase").hasPassword(uuid), roles,
+                userAuthorities.effectivePermissions(), user.lastLoginAt(), user.passwordChangedAt(),
+                user.createdAt(), user.updatedAt());
+    }
+
+    /** Names of the non-contact profile fields present in a PATCH body (contact fields are handled separately). */
+    private static List<String> changedProfileFields(UserRequests.Profile body) {
+        java.util.Map<String, Object> fields = new java.util.LinkedHashMap<>();
+        fields.put("givenName", body.givenName()); fields.put("familyName", body.familyName());
+        fields.put("middleName", body.middleName()); fields.put("nickname", body.nickname());
+        fields.put("gender", body.gender()); fields.put("birthdate", body.birthdate());
+        fields.put("locale", body.locale()); fields.put("profileUrl", body.profileUrl());
+        fields.put("pictureUrl", body.pictureUrl()); fields.put("websiteUrl", body.websiteUrl());
+        fields.put("zoneinfo", body.zoneinfo()); fields.put("addressStreetAddress", body.addressStreetAddress());
+        fields.put("addressLocality", body.addressLocality()); fields.put("addressRegion", body.addressRegion());
+        fields.put("addressPostalCode", body.addressPostalCode()); fields.put("addressCountry", body.addressCountry());
+        return fields.entrySet().stream().filter(entry -> entry.getValue() != null)
+                .map(java.util.Map.Entry::getKey).toList();
     }
 
     private UserResponses.UserResponse userResponse(UUID uuid) {
@@ -262,7 +340,8 @@ public class UserController {
     private List<UserResponses.IdentityResponse> identityResponses(UUID userUuid) {
         return required(identities, "ListUserIdentitiesUseCase").execute(userUuid).stream()
                 .map(identity -> new UserResponses.IdentityResponse(identity.uuid(), identity.provider(),
-                        identity.email(), identity.displayName(), identity.linkedAt())).toList();
+                        identity.email(), identity.displayName(), identity.username(), identity.pictureUrl(),
+                        identity.linkedAt(), identity.lastLoginAt())).toList();
     }
 
     private static UUID subject(Authentication auth) {

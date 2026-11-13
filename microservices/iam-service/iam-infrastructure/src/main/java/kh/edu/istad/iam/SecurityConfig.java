@@ -1,5 +1,7 @@
 package kh.edu.istad.iam;
 
+import kh.edu.istad.iam.infrastructure.security.LiveAuthorityResolver;
+
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -25,6 +27,21 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
+import kh.edu.istad.iam.infrastructure.account.AccountLoginHandlers;
+import kh.edu.istad.iam.infrastructure.account.AccountSessionFilter;
+import kh.edu.istad.iam.infrastructure.account.AccountSessionRegistry;
+import kh.edu.istad.iam.infrastructure.account.Principals;
+import kh.edu.istad.iam.infrastructure.account.SessionAwareAuthorizationService;
+import java.util.Arrays;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
@@ -70,22 +87,68 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * Rejects bearer tokens whose device session was signed out, records session activity, and exposes
+     * the session id to controllers as the {@link AccountSessionRegistry#REQUEST_ATTRIBUTE} request attribute.
+     */
     private Converter<Jwt, ? extends AbstractAuthenticationToken>
-    jwtAuthenticationConverter() {
+    jwtAuthenticationConverter(AccountSessionRegistry accountSessions, LiveAuthorityResolver liveAuthorities) {
 
-        JwtAuthenticationConverter converter =
-                new JwtAuthenticationConverter();
+        // SCOPE_* authorities from the token's scopes, plus — for user tokens — the user's current roles and
+        // permissions (ROLE_ADMIN, user:read, ...) resolved live, so @PreAuthorize("hasAuthority('user:read')")
+        // works and assignment changes, deactivation and locks apply without waiting for the token to expire.
+        JwtGrantedAuthoritiesConverter scopes = new JwtGrantedAuthoritiesConverter();
 
-        converter.setJwtGrantedAuthoritiesConverter(
-                new JwtGrantedAuthoritiesConverter()
-        );
+        return jwt -> {
+            String claim = jwt.getClaimAsString(AccountSessionRegistry.TOKEN_CLAIM);
+            if (claim != null) {
+                UUID sessionId = Principals.parse(claim);
+                if (sessionId == null || !accountSessions.isActive(sessionId)) {
+                    throw new InvalidBearerTokenException("This session has been signed out.");
+                }
+                accountSessions.touch(sessionId, null); // bearer-token API call: no browser session
+                if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
+                    attributes.getRequest().setAttribute(AccountSessionRegistry.REQUEST_ATTRIBUTE, sessionId);
+                }
+            }
+            java.util.List<org.springframework.security.core.GrantedAuthority> granted =
+                    new java.util.ArrayList<>(scopes.convert(jwt));
+            UUID userUuid = Principals.parse(jwt.getSubject());
+            if (userUuid != null) {
+                LiveAuthorityResolver.LiveAuthorities live = liveAuthorities.resolve(userUuid);
+                if (!live.active()) throw new InvalidBearerTokenException("This account is disabled or locked.");
+                live.authorities().forEach(authority -> granted.add(
+                        new org.springframework.security.core.authority.SimpleGrantedAuthority(authority)));
+            }
+            return new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken(
+                    jwt, granted, jwt.getSubject());
+        };
+    }
 
-        return converter;
+    /** Lets the iam-web React app (a different origin) call the REST API and the token endpoint. */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${iam.web.allowed-origins:http://localhost:9000,http://127.0.0.1:9000,http://localhost:5173,http://127.0.0.1:5173}") String allowedOrigins) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim).filter(origin -> !origin.isEmpty()).toList());
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Accept-Language"));
+        configuration.setExposedHeaders(List.of("WWW-Authenticate"));
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/oauth2/token", configuration);
+        source.registerCorsConfiguration("/oauth2/revoke", configuration);
+        source.registerCorsConfiguration("/userinfo", configuration);
+        source.registerCorsConfiguration("/.well-known/**", configuration);
+        return source;
     }
     @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
-                                                                       OidcClaimsService oidcClaimsService)
+                                                                       OidcClaimsService oidcClaimsService,
+                                                                       AccountSessionRegistry accountSessions)
             throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 new OAuth2AuthorizationServerConfigurer();
@@ -117,6 +180,8 @@ public class SecurityConfig {
                         authorize
                                 .anyRequest().authenticated()
                 )
+                .cors(Customizer.withDefaults())
+                .addFilterBefore(new AccountSessionFilter(accountSessions), AuthorizationFilter.class)
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
                 .exceptionHandling((exceptions) -> exceptions
@@ -135,21 +200,37 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(
             HttpSecurity http,
             FederatedOAuth2UserService federatedOAuth2UserService,
-            FederatedOidcUserService federatedOidcUserService
+            FederatedOidcUserService federatedOidcUserService,
+            AccountSessionRegistry accountSessions,
+            AccountLoginHandlers loginHandlers,
+            LiveAuthorityResolver liveAuthorities
     ) throws Exception {
 
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
+                                // iam-web React SPA (static/index.html + assets); its data is protected by /api/**
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/favicon.svg",
+                                "/callback",
+                                "/account",
+                                "/account/**",
+                                "/admin",
+                                "/admin/**",
+                                "/forgot-password",
+                                "/reset-password",
                                 "/login",
                                 "/register",
-                                "/api/auth/register",
+                                "/api/auth/**",
                                 "/oauth2/authorization/**",
                                 "/login/social/**",
                                 "/login/oauth2/code/**",
                                 "/error",
                                 "/favicon.ico"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/picture").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -157,9 +238,12 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/**")
                 )
 
+                .cors(Customizer.withDefaults())
+                .addFilterBefore(new AccountSessionFilter(accountSessions), AuthorizationFilter.class)
+
                 .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter(accountSessions, liveAuthorities))
                         )
                 )
 
@@ -172,13 +256,15 @@ public class SecurityConfig {
                                 .userService(federatedOAuth2UserService)
                                 .oidcUserService(federatedOidcUserService)
                         )
+                        .successHandler(loginHandlers.successHandler())
+                        .failureHandler(loginHandlers.failureHandler())
                 )
 
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .failureUrl("/login?error")
-                        .defaultSuccessUrl("/", false)
+                        .successHandler(loginHandlers.successHandler())
+                        .failureHandler(loginHandlers.failureHandler())
                         .permitAll()
                 )
 
@@ -227,7 +313,8 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
-                                                            RegisteredClientRepository registeredClientRepository) {
+                                                            RegisteredClientRepository registeredClientRepository,
+                                                            AccountSessionRegistry accountSessions) {
         var jsonMapper = IamAuthorizationJsonMapper.create();
         var service = new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
         service.setAuthorizationParametersMapper(
@@ -235,7 +322,7 @@ public class SecurityConfig {
         service.setAuthorizationRowMapper(
                 new JdbcOAuth2AuthorizationService.JsonMapperOAuth2AuthorizationRowMapper(
                         registeredClientRepository, jsonMapper));
-        return service;
+        return new SessionAwareAuthorizationService(service, accountSessions);
     }
 
     @Bean
@@ -296,6 +383,12 @@ public class SecurityConfig {
                         .toList());
                 UUID userUuid = principalUuid(context.getPrincipal().getPrincipal());
                 if (userUuid != null) context.getClaims().subject(userUuid.toString());
+                OAuth2Authorization authorization = context.getAuthorization();
+                Object sessionId = authorization == null ? null
+                        : authorization.getAttribute(AccountSessionRegistry.AUTHORIZATION_ATTRIBUTE);
+                if (sessionId != null) {
+                    context.getClaims().claim(AccountSessionRegistry.TOKEN_CLAIM, sessionId.toString());
+                }
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 UUID userUuid = principalUuid(context.getPrincipal().getPrincipal());
                 if (userUuid != null) {

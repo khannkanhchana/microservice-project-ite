@@ -36,6 +36,16 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "Invalid request", exception.getMessage());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    ResponseEntity<ProblemDetail> conflict(IllegalStateException exception) {
+        return problem(HttpStatus.CONFLICT, "Conflict", exception.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    ResponseEntity<ProblemDetail> tooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException exception) {
+        return problem(HttpStatus.CONTENT_TOO_LARGE, "File too large", "Profile pictures must be 2 MB or smaller.");
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     ResponseEntity<ProblemDetail> forbidden(AccessDeniedException exception) {
         return problem(HttpStatus.FORBIDDEN, "Forbidden", "You do not have permission to perform this action.");

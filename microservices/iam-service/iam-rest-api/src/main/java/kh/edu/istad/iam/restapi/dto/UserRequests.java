@@ -41,6 +41,8 @@ public final class UserRequests {
                           String postalCode, String country) { }
 
     public record Profile(
+            @Size(min = 3, max = 50) String username,
+            @Email @Size(max = 255) String email,
             @Size(max = 100) String givenName,
             @Size(max = 100) String familyName,
             String middleName, String nickname, String gender, LocalDate birthdate,
@@ -49,9 +51,22 @@ public final class UserRequests {
             String addressStreetAddress, String addressLocality, String addressRegion,
             String addressPostalCode, String addressCountry) { }
 
-    public record PasswordChange(@NotBlank String currentPassword,
+    /** currentPassword may be omitted only by accounts that have never had a password (social sign-up). */
+    public record PasswordChange(String currentPassword,
                                  @NotBlank @Size(min = 8, max = 100) String newPassword,
-                                 @NotBlank @Size(min = 8, max = 100) String confirmPassword) { }
+                                 @NotBlank @Size(min = 8, max = 100) String confirmPassword,
+                                 Boolean signOutOtherSessions) { }
+
+    public record ForgotPassword(@NotBlank @Email @Size(max = 255) String email) { }
+
+    public record ResetPassword(@NotBlank String token,
+                                @NotBlank @Size(min = 8, max = 100) String newPassword,
+                                @NotBlank @Size(min = 8, max = 100) String confirmPassword) { }
+
+    public record Deactivation(String password, @Size(max = 500) String reason,
+                               @NotBlank String confirmation) { }
+
+    public record LinkIdentity(@NotBlank String provider, @NotBlank @Size(max = 500) String returnUrl) { }
 
     public record PasswordReset(@NotBlank @Size(min = 8, max = 100) String newPassword) { }
 
