@@ -1,11 +1,14 @@
 package kh.edu.istad.iam.infrastructure.account;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.ObjectProvider;
 import kh.edu.istad.iam.infrastructure.admin.SystemSettingsService;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -190,8 +193,7 @@ public class AccountSessionRegistry {
         redis.opsForSet().remove(userKey(session.userUuid()), session.id().toString());
 
         // Sign the browser out of the IAM server: its Spring Session lives in Redis too.
-        SessionRepository<?> repository = httpSessions.getIfAvailable();
-        if (repository != null && session.httpSessionId() != null) repository.deleteById(session.httpSessionId());
+        endHttpSession(session.httpSessionId());
 
         // Its OAuth2 authorizations (and so its refresh tokens) are in PostgreSQL.
         if (authorizations != null) {
@@ -199,6 +201,28 @@ public class AccountSessionRegistry {
                 jdbc.update("DELETE FROM oauth2_authorization WHERE id = ?", authorizationId);
             }
         }
+    }
+
+    /**
+     * Deletes a browser's Spring Session. When it is the session of the request being handled, it is
+     * invalidated through that request instead, so Spring Session knows not to save it when the request
+     * ends (deleting it behind the request's back makes that save fail with "Session was invalidated").
+     */
+    private void endHttpSession(String httpSessionId) {
+        if (httpSessionId == null) return;
+        if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes) {
+            HttpSession current = attributes.getRequest().getSession(false);
+            if (current != null && httpSessionId.equals(current.getId())) {
+                try {
+                    current.invalidate();
+                } catch (IllegalStateException alreadyInvalidated) {
+                    // nothing left to end
+                }
+                return;
+            }
+        }
+        SessionRepository<?> repository = httpSessions.getIfAvailable();
+        if (repository != null) repository.deleteById(httpSessionId);
     }
 
     private DeviceSession read(UUID id) {

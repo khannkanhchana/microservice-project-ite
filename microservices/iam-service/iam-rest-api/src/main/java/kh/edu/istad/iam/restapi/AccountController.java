@@ -125,7 +125,7 @@ public class AccountController {
         return service().loginHistory(subject(auth), success, page, size);
     }
 
-    @GetMapping("/me/activity")
+    @GetMapping({"/me/activity", "/me/activities"})
     @PreAuthorize("isAuthenticated()")
     public PageResult<AccountActivityResult> activity(@RequestParam(defaultValue = "0") int page,
                                                       @RequestParam(defaultValue = "20") int size,
@@ -147,9 +147,41 @@ public class AccountController {
         service().deactivate(uuid, body.password(), body.reason(), actor(auth));
     }
 
+    // ---- Deactivation request (grace period, can be cancelled) ---------------------------------------------------
+
+    /** Requests deactivation; the account is disabled when the grace period ends unless the request is cancelled. */
+    @PostMapping("/me/deactivation-request")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("isAuthenticated()")
+    public DeactivationRequestResult requestDeactivation(@Valid @RequestBody UserRequests.Deactivation body,
+                                                         Authentication auth) {
+        UUID uuid = subject(auth);
+        String username = required(getUser, "GetUserUseCase").execute(uuid).username();
+        if (!username.equals(body.confirmation().trim())) {
+            throw new IllegalArgumentException("Type your username exactly to confirm deactivation.");
+        }
+        return service().requestDeactivation(uuid, body.password(), body.reason(), actor(auth));
+    }
+
+    /** The latest deactivation request (PENDING, CANCELLED or COMPLETED); 204 when there has been none. */
+    @GetMapping("/me/deactivation-request")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DeactivationRequestResult> deactivationRequest(Authentication auth) {
+        return service().deactivationRequest(subject(auth))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    /** Cancels the pending request; 409 when nothing is pending. */
+    @DeleteMapping("/me/deactivation-request")
+    @PreAuthorize("isAuthenticated()")
+    public DeactivationRequestResult cancelDeactivation(Authentication auth) {
+        return service().cancelDeactivation(subject(auth), actor(auth));
+    }
+
     // ---- Profile picture ------------------------------------------------------------------------------------
 
-    @PostMapping(value = "/me/picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = {"/me/picture", "/me/avatar"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     public UserResponses.PictureUpload uploadPicture(@RequestParam("file") MultipartFile file, Authentication auth)
             throws IOException {
@@ -158,7 +190,7 @@ public class AccountController {
                 file.getBytes(), baseUrl, actor(auth)));
     }
 
-    @DeleteMapping("/me/picture")
+    @DeleteMapping({"/me/picture", "/me/avatar"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("isAuthenticated()")
     public void removePicture(Authentication auth) {
@@ -191,12 +223,30 @@ public class AccountController {
     @PostMapping("/me/identities/link")
     @PreAuthorize("isAuthenticated()")
     public UserResponses.LinkStart startLink(@Valid @RequestBody UserRequests.LinkIdentity body, Authentication auth) {
-        String provider = body.provider().toLowerCase(Locale.ROOT);
+        return startLinkFlow(body.provider(), body.returnUrl(), auth);
+    }
+
+    /**
+     * Same as {@code POST /me/identities/link} with the provider (google, github, facebook, …) in the path; the
+     * body may give {@code returnUrl}, otherwise the user returns to the Linked accounts page.
+     */
+    @PostMapping("/me/identities/{provider}/link")
+    @PreAuthorize("isAuthenticated()")
+    public UserResponses.LinkStart startProviderLink(@PathVariable("provider") String provider,
+                                                     @RequestBody(required = false) java.util.Map<String, String> body,
+                                                     Authentication auth) {
+        String returnUrl = body == null ? null : body.get("returnUrl");
+        if (returnUrl == null || returnUrl.isBlank()) returnUrl = webBaseUrl + "/account/linked-accounts";
+        return startLinkFlow(provider, returnUrl, auth);
+    }
+
+    private UserResponses.LinkStart startLinkFlow(String providerName, String returnUrl, Authentication auth) {
+        String provider = providerName == null ? "" : providerName.toLowerCase(Locale.ROOT);
         if (!PROVIDERS.containsKey(provider) || !configured(provider)) {
             throw new IllegalArgumentException("This sign-in provider is not available.");
         }
-        requireAllowedReturnUrl(body.returnUrl());
-        String ticket = service().createLinkTicket(subject(auth), provider, body.returnUrl());
+        requireAllowedReturnUrl(returnUrl);
+        String ticket = service().createLinkTicket(subject(auth), provider, returnUrl);
         String url = ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/auth/link")
                 .queryParam("ticket", ticket).build().toUriString();
         return new UserResponses.LinkStart(url);
@@ -221,13 +271,13 @@ public class AccountController {
 
     // ---- Password recovery ----------------------------------------------------------------------------------
 
-    @PostMapping("/auth/password/forgot")
+    @PostMapping({"/auth/password/forgot", "/auth/forgot-password"})
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void forgotPassword(@Valid @RequestBody UserRequests.ForgotPassword body) {
         service().requestPasswordReset(body.email(), webBaseUrl + "/reset-password");
     }
 
-    @PostMapping("/auth/password/reset")
+    @PostMapping({"/auth/password/reset", "/auth/reset-password"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@Valid @RequestBody UserRequests.ResetPassword body) {
         if (!body.newPassword().equals(body.confirmPassword())) {

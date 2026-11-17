@@ -9,7 +9,8 @@ const query = (params = {}) => {
 
 /** Administration API (iam-service /api/admin, /api/users, /api/roles, /api/permissions). */
 export const adminApi = {
-  overview: () => request('/api/admin/overview'),
+  overview: () => request('/api/admin/dashboard/overview'),
+  recentActivities: (limit = 20) => request(`/api/admin/dashboard/activities${query({ limit })}`),
 
   // Users
   users: (params) => request(`/api/admin/users${query(params)}`),
@@ -32,9 +33,9 @@ export const adminApi = {
   unlinkIdentity: (uuid, identityUuid) => request(`/api/users/${uuid}/identities/${identityUuid}`, { method: 'DELETE' }),
 
   // Sessions & login monitoring
-  userSessions: (uuid) => request(`/api/admin/users/${uuid}/sessions`),
-  revokeUserSession: (uuid, sessionId) => request(`/api/admin/users/${uuid}/sessions/${sessionId}`, { method: 'DELETE' }),
-  revokeUserSessions: (uuid) => request(`/api/admin/users/${uuid}/sessions`, { method: 'DELETE' }),
+  userSessions: (uuid) => request(`/api/users/${uuid}/sessions`),
+  revokeUserSession: (uuid, sessionId) => request(`/api/users/${uuid}/sessions/${sessionId}`, { method: 'DELETE' }),
+  revokeUserSessions: (uuid) => request(`/api/users/${uuid}/sessions`, { method: 'DELETE' }),
   loginHistory: (params) => request(`/api/admin/login-history${query(params)}`),
   suspicious: (days = 7) => request(`/api/admin/login-history/suspicious${query({ days })}`),
 
@@ -59,14 +60,20 @@ export const adminApi = {
     request(`/api/permissions/${uuid}/${active ? 'activate' : 'deactivate'}`, { method: 'POST' }),
 
   // OAuth2 clients
-  clients: (search) => request(`/api/admin/clients${query({ search })}`),
-  createClient: (body) => request('/api/admin/clients', { method: 'POST', body }),
-  updateClient: (id, body) => request(`/api/admin/clients/${id}`, { method: 'PUT', body }),
-  rotateSecret: (id) => request(`/api/admin/clients/${id}/secret`, { method: 'POST' }),
-  deleteClient: (id) => request(`/api/admin/clients/${id}`, { method: 'DELETE' }),
+  // {clientId} accepts the client ID or the internal registration id.
+  clients: (search) => request(`/api/clients${query({ search })}`),
+  client: (clientId) => request(`/api/clients/${encodeURIComponent(clientId)}`),
+  createClient: (body) => request('/api/clients', { method: 'POST', body }),
+  updateClient: (clientId, body) => request(`/api/clients/${encodeURIComponent(clientId)}`, { method: 'PATCH', body }),
+  rotateSecret: (clientId) => request(`/api/clients/${encodeURIComponent(clientId)}/secret`, { method: 'POST' }),
+  deleteClient: (clientId) => request(`/api/clients/${encodeURIComponent(clientId)}`, { method: 'DELETE' }),
 
   // Audit & settings
   auditLogs: (params) => request(`/api/admin/audit-logs${query(params)}`),
+  auditLog: (id) => request(`/api/admin/audit-logs/${id}`),
   settings: () => request('/api/admin/settings'),
+  patchSettings: (changes) => request('/api/admin/settings', { method: 'PATCH', body: changes }),
+  securityPolicies: () => request('/api/admin/settings/security'),
+  patchSecurityPolicies: (changes) => request('/api/admin/settings/security', { method: 'PATCH', body: changes }),
   updateSettings: (body) => request('/api/admin/settings', { method: 'PUT', body }),
 }

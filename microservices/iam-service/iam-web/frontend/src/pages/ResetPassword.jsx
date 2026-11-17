@@ -38,7 +38,7 @@ export default function ResetPassword() {
 
   return (
     <PublicLayout>
-      <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+      <div className="rounded-xl border border-line bg-surface p-6 sm:p-8">
         <h1 className="text-xl font-semibold text-ink">{t('reset.title')}</h1>
         <p className="mt-1 text-sm text-muted">{t('reset.subtitle')}</p>
         {!token ? (

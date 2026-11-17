@@ -30,7 +30,7 @@ export default function ForgotPassword() {
 
   return (
     <PublicLayout>
-      <div className="rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+      <div className="rounded-xl border border-line bg-surface p-6 sm:p-8">
         <div className="mb-4 inline-flex rounded-full bg-primary-soft p-3 text-primary">
           <MailIcon />
         </div>

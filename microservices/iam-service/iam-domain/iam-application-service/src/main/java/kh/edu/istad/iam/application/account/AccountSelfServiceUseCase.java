@@ -32,6 +32,21 @@ public interface AccountSelfServiceUseCase {
 
     void deactivate(UUID userUuid, String password, String reason, String actor);
 
+    /**
+     * Requests deactivation after a grace period (the password is checked when the account has one). The account
+     * stays usable until then and the request can be cancelled; with no grace period it is deactivated at once.
+     */
+    DeactivationRequestResult requestDeactivation(UUID userUuid, String password, String reason, String actor);
+
+    /** The user's most recent deactivation request, if any. */
+    Optional<DeactivationRequestResult> deactivationRequest(UUID userUuid);
+
+    /** Cancels the user's pending deactivation request. */
+    DeactivationRequestResult cancelDeactivation(UUID userUuid, String actor);
+
+    /** Completes pending requests whose grace period is over; returns how many accounts were deactivated. */
+    int processDueDeactivations();
+
     String storePicture(UUID userUuid, String contentType, byte[] data, String publicBaseUrl, String actor);
 
     void removePicture(UUID userUuid, String actor);

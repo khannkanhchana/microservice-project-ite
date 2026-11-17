@@ -4,6 +4,7 @@ import kh.edu.istad.iam.application.admin.AdminModels.*;
 import kh.edu.istad.iam.application.result.PageResult;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Read models and actions of the administration console that are not plain user/role/permission CRUD. */
@@ -34,6 +35,12 @@ public interface AdminConsoleUseCase {
     List<SuspiciousActivity> suspiciousActivity(int days);
 
     PageResult<AuditLogEntry> auditLogs(AuditQuery query);
+
+    /** One audit log entry, or empty when no entry has that id. */
+    Optional<AuditLogEntry> auditLog(UUID id);
+
+    /** The most recent audit log entries (system activity), newest first; {@code limit} is clamped to 1..100. */
+    List<AuditLogEntry> recentActivities(int limit);
 
     void audit(AuditEvent event);
 }

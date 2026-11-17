@@ -15,8 +15,8 @@ const withAdmin = (base, admin, nav, activityTypes) => ({
 
 const STORAGE_KEY = 'iam.lang'
 export const LANGUAGES = [
-  { code: 'en', label: 'English', short: 'EN' },
-  { code: 'km', label: 'ភាសាខ្មែរ', short: 'ខ្មែរ' },
+  { code: 'en', label: 'English', short: 'EN', flag: '/images/english-flag.png' },
+  { code: 'km', label: 'ភាសាខ្មែរ', short: 'ខ្មែរ', flag: '/images/khmer-flag.png' },
 ]
 
 function storedLanguage() {

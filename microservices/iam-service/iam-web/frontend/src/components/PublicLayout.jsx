@@ -5,11 +5,11 @@ import LanguageSwitcher from './LanguageSwitcher'
 export default function PublicLayout({ children, wide = false }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
+      <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
         <Logo />
         <LanguageSwitcher />
       </header>
-      <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6 sm:items-center sm:pt-0">
+      <main className="flex flex-1 animate-in items-start justify-center px-4 pb-16 pt-6 sm:items-center sm:px-6 sm:pt-0">
         <div className={wide ? 'w-full max-w-5xl' : 'w-full max-w-md'}>{children}</div>
       </main>
     </div>

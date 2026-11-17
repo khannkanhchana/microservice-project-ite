@@ -43,6 +43,10 @@ public class AccountSelfServiceService implements AccountSelfServiceUseCase {
     private final SecureRandom random = new SecureRandom();
     private final Map<String, PendingLink> linkTickets = new ConcurrentHashMap<>();
 
+    /** Days between a deactivation request and the account being disabled; 0 deactivates at once. */
+    @org.springframework.beans.factory.annotation.Value("${iam.account.deactivation-grace-days:7}")
+    private int deactivationGraceDays;
+
     public AccountSelfServiceService(JdbcTemplate jdbc, UserRepository users, PasswordHasher passwordHasher,
                                      AccountSessionRegistry sessions, AccountAuditLog audit) {
         this.jdbc = jdbc;
@@ -196,26 +200,118 @@ public class AccountSelfServiceService implements AccountSelfServiceUseCase {
     @Override
     @Transactional
     public void deactivate(UUID userUuid, String password, String reason, String actor) {
+        User user = requireActiveAccount(userUuid);
+        checkPassword(user, password);
+        Instant now = Instant.now();
+        jdbc.update("""
+                INSERT INTO account_deactivation_requests (id, user_uuid, reason, status, requested_at, scheduled_for, processed_at)
+                VALUES (?, ?, ?, 'COMPLETED', ?, ?, ?)""",
+                UUID.randomUUID(), userUuid, truncate(reason, 500), Timestamp.from(now), Timestamp.from(now), Timestamp.from(now));
+        disableAccount(user, reason, actor, now);
+    }
+
+    @Override
+    @Transactional
+    public DeactivationRequestResult requestDeactivation(UUID userUuid, String password, String reason, String actor) {
+        User user = requireActiveAccount(userUuid);
+        checkPassword(user, password);
+        if (deactivationRequest(userUuid).filter(DeactivationRequestResult::pending).isPresent()) {
+            throw new IllegalStateException("A deactivation request is already pending.");
+        }
+        int graceDays = Math.max(deactivationGraceDays, 0);
+        if (graceDays == 0) {
+            deactivate(userUuid, password, reason, actor);
+            return deactivationRequest(userUuid).orElseThrow();
+        }
+        Instant now = Instant.now();
+        Instant scheduledFor = now.plus(Duration.ofDays(graceDays));
+        jdbc.update("""
+                INSERT INTO account_deactivation_requests (id, user_uuid, reason, status, requested_at, scheduled_for)
+                VALUES (?, ?, ?, 'PENDING', ?, ?)""",
+                UUID.randomUUID(), userUuid, truncate(reason, 500), Timestamp.from(now), Timestamp.from(scheduledFor));
+        audit.activity(userUuid, AccountActivityType.DEACTIVATION_REQUESTED,
+                "Takes effect " + scheduledFor + (reason == null || reason.isBlank() ? "" : " — " + truncate(reason, 400)),
+                actor);
+        return deactivationRequest(userUuid).orElseThrow();
+    }
+
+    @Override
+    public Optional<DeactivationRequestResult> deactivationRequest(UUID userUuid) {
+        return jdbc.query("""
+                SELECT * FROM account_deactivation_requests WHERE user_uuid = ?
+                ORDER BY requested_at DESC LIMIT 1""", DEACTIVATION_ROW, userUuid).stream().findFirst();
+    }
+
+    @Override
+    @Transactional
+    public DeactivationRequestResult cancelDeactivation(UUID userUuid, String actor) {
+        DeactivationRequestResult request = deactivationRequest(userUuid).filter(DeactivationRequestResult::pending)
+                .orElseThrow(() -> new IllegalStateException("There is no pending deactivation request to cancel."));
+        jdbc.update("""
+                UPDATE account_deactivation_requests SET status = 'CANCELLED', cancelled_at = ?
+                WHERE id = ? AND status = 'PENDING'""", Timestamp.from(Instant.now()), request.id());
+        audit.activity(userUuid, AccountActivityType.DEACTIVATION_CANCELLED, null, actor);
+        return deactivationRequest(userUuid).orElseThrow();
+    }
+
+    @Override
+    @Transactional
+    public int processDueDeactivations() {
+        List<Map<String, Object>> due = jdbc.queryForList("""
+                SELECT id, user_uuid, reason FROM account_deactivation_requests
+                WHERE status = 'PENDING' AND scheduled_for <= now() ORDER BY scheduled_for LIMIT 100""");
+        int done = 0;
+        for (Map<String, Object> row : due) {
+            Instant now = Instant.now();
+            // Claim the request first so that two instances never process it twice.
+            int claimed = jdbc.update("""
+                    UPDATE account_deactivation_requests SET status = 'COMPLETED', processed_at = ?
+                    WHERE id = ? AND status = 'PENDING'""", Timestamp.from(now), row.get("id"));
+            if (claimed == 0) continue;
+            UUID userUuid = (UUID) row.get("user_uuid");
+            Optional<User> user = users.findByUuid(userUuid).filter(u -> !u.isDeleted());
+            if (user.isPresent()) {
+                if (user.get().isEnabledFlag()) {
+                    disableAccount(user.get(), (String) row.get("reason"), "system", now);
+                } else {
+                    sessions.revokeAll(userUuid, null, "account_deactivated");
+                }
+                done++;
+            }
+        }
+        if (done > 0) log.info("Completed {} scheduled account deactivation(s)", done);
+        return done;
+    }
+
+    private User requireActiveAccount(UUID userUuid) {
         User user = users.findByUuid(userUuid).orElseThrow(() -> new IllegalArgumentException("User was not found."));
         if (user.isDeleted() || !user.isEnabledFlag()) {
             throw new IllegalStateException("This account is already deactivated.");
         }
+        return user;
+    }
+
+    /** Accounts that have a password must confirm it; social-only accounts have none to check. */
+    private void checkPassword(User user, String password) {
         String hash = user.getPasswordHash();
         if (hash != null && !hash.isBlank()) {
             if (password == null || password.isBlank() || !passwordHasher.matches(password, hash)) {
                 throw new IllegalArgumentException("Password is incorrect.");
             }
         }
-        Instant now = Instant.now();
+    }
+
+    private void disableAccount(User user, String reason, String actor, Instant now) {
         user.setEnabled(false, now, actor);
         users.save(user);
-        jdbc.update("""
-                INSERT INTO account_deactivation_requests (id, user_uuid, reason, status, requested_at, processed_at)
-                VALUES (?, ?, ?, 'COMPLETED', ?, ?)""",
-                UUID.randomUUID(), userUuid, truncate(reason, 500), Timestamp.from(now), Timestamp.from(now));
-        audit.activity(userUuid, AccountActivityType.ACCOUNT_DEACTIVATED, truncate(reason, 500), actor);
-        sessions.revokeAll(userUuid, null, "account_deactivated");
+        audit.activity(user.getUuid(), AccountActivityType.ACCOUNT_DEACTIVATED, truncate(reason, 500), actor);
+        sessions.revokeAll(user.getUuid(), null, "account_deactivated");
     }
+
+    private static final org.springframework.jdbc.core.RowMapper<DeactivationRequestResult> DEACTIVATION_ROW =
+            (rs, i) -> new DeactivationRequestResult(rs.getObject("id", UUID.class), rs.getString("status"),
+                    rs.getString("reason"), instant(rs, "requested_at"), instant(rs, "scheduled_for"),
+                    instant(rs, "processed_at"), instant(rs, "cancelled_at"));
 
     @Override
     @Transactional

@@ -135,3 +135,18 @@ databaseChangeLog:
             path: 010-admin-console.sql
             relativeToChangelogFile: true
             splitStatements: true
+
+  - changeSet:
+      id: iam-v2-deactivation-requests
+      author: istad
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: account_deactivation_requests
+                columnName: scheduled_for
+      changes:
+        - sqlFile:
+            path: 011-deactivation-requests.sql
+            relativeToChangelogFile: true
+            splitStatements: true

@@ -16,7 +16,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -44,7 +44,7 @@
                     radial-gradient(ellipse at top left, rgba(99, 102, 241, .12), transparent 38%),
                     var(--bg);
             color: var(--text);
-            font-family: "DM Sans", "Noto Sans Khmer", sans-serif;
+            font-family: "Google Sans", system-ui, sans-serif;
             line-height: 1.6;
         }
 
@@ -446,10 +446,10 @@
         <nav class="nav-links">
             <a href="/">${messages.get("common.home")}</a>
             <div class="language">
-                <a href="?lang=en" class="${"en".equals(lang) ? "active" : ""}">
+                <a href="?lang=en" class="${"en".equals(lang) ? "active" : ""}"><img class="lang-flag" src="/images/english-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">
                     ${messages.get("common.english")}
                 </a>
-                <a href="?lang=km" class="${"km".equals(lang) ? "active" : ""}">
+                <a href="?lang=km" class="${"km".equals(lang) ? "active" : ""}"><img class="lang-flag" src="/images/khmer-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">
                     ${messages.get("common.khmer")}
                 </a>
             </div>

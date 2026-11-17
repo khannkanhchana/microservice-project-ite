@@ -119,9 +119,10 @@ public class ClientAdminService implements ClientAdminUseCase {
         if (systemClients.contains(client.getClientId())) {
             throw new IllegalArgumentException("Built-in client '" + client.getClientId() + "' cannot be deleted.");
         }
-        jdbc.update("DELETE FROM oauth2_authorization_consent WHERE registered_client_id = ?", id);
-        jdbc.update("DELETE FROM oauth2_authorization WHERE registered_client_id = ?", id);
-        jdbc.update("DELETE FROM oauth2_registered_client WHERE id = ?", id);
+        String registrationId = client.getId(); // {id} may be the client ID; the tables key on the registration id
+        jdbc.update("DELETE FROM oauth2_authorization_consent WHERE registered_client_id = ?", registrationId);
+        jdbc.update("DELETE FROM oauth2_authorization WHERE registered_client_id = ?", registrationId);
+        jdbc.update("DELETE FROM oauth2_registered_client WHERE id = ?", registrationId);
     }
 
     @Override
@@ -242,8 +243,10 @@ public class ClientAdminService implements ClientAdminUseCase {
         return !c.getClientAuthenticationMethods().contains(ClientAuthenticationMethod.NONE);
     }
 
+    /** Finds a client by its registration id or, failing that, by its client ID. */
     private RegisteredClient require(String id) {
         RegisteredClient client = id == null ? null : clients.findById(id);
+        if (client == null && id != null) client = clients.findByClientId(id);
         if (client == null) throw new IllegalArgumentException("Client was not found.");
         return client;
     }

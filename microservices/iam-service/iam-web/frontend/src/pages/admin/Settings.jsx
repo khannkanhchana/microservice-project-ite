@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../api/admin'
 import { useAuth } from '../../auth/AuthContext'
-import { Alert, Button, Card, Checkbox, Field, Input, PageHeader, useToast } from '../../components/ui'
+import { Alert, Badge, Button, Card, Checkbox, Field, Input, PageHeader, useToast } from '../../components/ui'
 import { LoadingBlock } from '../../components/admin'
 import { ProviderIcon } from '../../components/icons'
 import { errorMessage, formatDateTime } from '../../lib/format'
@@ -10,6 +10,22 @@ import { hasPermission } from '../../lib/permissions'
 import { useResource } from '../../lib/useResource'
 
 const PROVIDERS = ['google', 'github', 'facebook', 'telegram']
+const SECTIONS = ['authentication', 'password', 'session', 'tokens']
+// Sections served by /api/admin/settings/security; token lifetimes are only in /api/admin/settings.
+const SECURITY_SECTIONS = ['authentication', 'password', 'session']
+
+/** The sections whose values differ from the saved settings, e.g. { password: { minLength: 10 } }. */
+function changedSections(saved, form) {
+  const changes = {}
+  for (const section of SECTIONS) {
+    for (const [key, value] of Object.entries(form[section] || {})) {
+      if (JSON.stringify(value) !== JSON.stringify(saved[section]?.[key])) {
+        changes[section] = { ...changes[section], [key]: value }
+      }
+    }
+  }
+  return changes
+}
 
 function NumberField({ label, hint, value, onChange, min, max, disabled, suffix }) {
   return (
@@ -47,7 +63,15 @@ export default function Settings() {
     setBusy(true)
     setSaveError(null)
     try {
-      await adminApi.updateSettings(form)
+      const changes = changedSections(data, form)
+      const sections = Object.keys(changes)
+      if (sections.length === 0) {
+        toast(t('admin.settings.noChanges'), 'info')
+        return
+      }
+      // Only the changed values are sent (PATCH); security-only edits go to the security policies endpoint.
+      if (sections.every((s) => SECURITY_SECTIONS.includes(s))) await adminApi.patchSecurityPolicies(changes)
+      else await adminApi.patchSettings(changes)
       toast(t('admin.settings.saved'))
       reload()
     } catch (err) {
@@ -61,13 +85,20 @@ export default function Settings() {
   if (error) return <Alert tone="danger">{errorMessage(error, t)}</Alert>
   if (!form) return null
   const { authentication: a, password: p, session: s, tokens: k } = form
+  const dirty = Object.keys(changedSections(data, form)).length > 0
 
   return (
     <form onSubmit={save}>
       <PageHeader
         title={t('admin.settings.title')}
         description={t('admin.settings.description')}
-        actions={editable && <Button type="submit" loading={busy}>{t('common.save')}</Button>}
+        actions={editable && (
+          <div className="flex items-center gap-2">
+            {dirty && <Badge tone="warning">{t('admin.settings.unsaved')}</Badge>}
+            {dirty && <Button type="button" variant="secondary" onClick={() => setForm(data)}>{t('admin.settings.discard')}</Button>}
+            <Button type="submit" loading={busy} disabled={!dirty}>{t('common.save')}</Button>
+          </div>
+        )}
       />
       {saveError && <div className="mb-4"><Alert tone="danger" onDismiss={() => setSaveError(null)}>{saveError}</Alert></div>}
       {data.updatedAt && (

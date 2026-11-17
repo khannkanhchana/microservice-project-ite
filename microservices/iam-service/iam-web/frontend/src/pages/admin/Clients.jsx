@@ -39,13 +39,26 @@ export default function Clients() {
 
   const confirmAction = async () => {
     if (confirm.kind === 'delete') {
-      await adminApi.deleteClient(confirm.client.id)
+      await adminApi.deleteClient(confirm.client.clientId)
       toast(t('admin.clients.deleted'))
     } else {
-      const result = await adminApi.rotateSecret(confirm.client.id)
+      const result = await adminApi.rotateSecret(confirm.client.clientId)
       setSecret(result)
     }
     reload()
+  }
+
+  // Opens the editor with the client's current settings from GET /api/clients/{clientId}.
+  const [opening, setOpening] = useState(null)
+  const openEditor = async (client) => {
+    setOpening(client.clientId)
+    try {
+      setEditing(toForm(await adminApi.client(client.clientId)))
+    } catch (err) {
+      toast(errorMessage(err, t), 'danger')
+    } finally {
+      setOpening(null)
+    }
   }
 
   return (
@@ -84,7 +97,7 @@ export default function Clients() {
                   {c.redirectUris.length > 0 && <p className="mt-1 truncate font-mono text-xs text-muted">{c.redirectUris.join('  ·  ')}</p>}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {can('client:update') && <Button size="sm" variant="secondary" onClick={() => setEditing(toForm(c))}>{t('admin.common.edit')}</Button>}
+                  {can('client:update') && <Button size="sm" variant="secondary" loading={opening === c.clientId} onClick={() => openEditor(c)}>{t('admin.common.edit')}</Button>}
                   {can('client:update') && c.confidential && (
                     <Button size="sm" variant="ghost" onClick={() => setConfirm({ kind: 'rotate', client: c })}>{t('admin.clients.rotate')}</Button>
                   )}
@@ -177,7 +190,7 @@ function ClientDialog({ initial, onClose, onSaved }) {
       reuseRefreshTokens: form.reuseRefreshTokens,
     }
     try {
-      const result = editing ? await adminApi.updateClient(initial.id, body) : await adminApi.createClient(body)
+      const result = editing ? await adminApi.updateClient(initial.clientId, body) : await adminApi.createClient(body)
       onSaved(result)
     } catch (err) {
       setError(errorMessage(err, t))

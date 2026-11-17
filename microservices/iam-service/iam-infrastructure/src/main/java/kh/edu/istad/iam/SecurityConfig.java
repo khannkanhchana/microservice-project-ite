@@ -59,6 +59,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.security.KeyPair;
@@ -213,6 +214,7 @@ public class SecurityConfig {
                                 "/",
                                 "/index.html",
                                 "/assets/**",
+                                "/images/**", // social login logos used by the JTE /login and /register pages
                                 "/favicon.svg",
                                 "/callback",
                                 "/account",
@@ -286,8 +288,11 @@ public class SecurityConfig {
                         )
 
                         // Browser: បញ្ជូនអ្នកប្រើប្រាស់ទៅ Login Page
-                        .authenticationEntryPoint(
-                                new LoginUrlAuthenticationEntryPoint("/login")
+                        // (a fallback mapping, not .authenticationEntryPoint(...): an explicit entry point
+                        // overrides every mapping above, so /api/** would get a 302 to /login instead of 401)
+                        .defaultAuthenticationEntryPointFor(
+                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                AnyRequestMatcher.INSTANCE
                         )
 
                         .accessDeniedHandler((request, response, exception) -> {

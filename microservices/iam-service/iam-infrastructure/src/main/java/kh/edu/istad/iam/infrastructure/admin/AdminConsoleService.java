@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -70,8 +71,7 @@ public class AdminConsoleService implements AdminConsoleUseCase {
                 LEFT JOIN login_attempts la ON la.attempted_at >= d.day AND la.attempted_at < d.day + interval '1 day'
                 GROUP BY d.day ORDER BY d.day""",
                 (rs, i) -> new DailyLogins(rs.getString("day"), rs.getLong("ok"), rs.getLong("failed")));
-        List<AuditLogEntry> recent = jdbc.query(
-                "SELECT * FROM audit_logs ORDER BY occurred_at DESC LIMIT 12", AUDIT_ROW);
+        List<AuditLogEntry> recent = recentActivities(12);
         long signedIn = sessions.activeCounts()[0];
         return new Overview(num(users.get("total")), num(users.get("active")), num(users.get("disabled")),
                 num(users.get("locked")), signedIn, num(users.get("recent")), roles, permissions, clients,
@@ -311,6 +311,18 @@ public class AdminConsoleService implements AdminConsoleUseCase {
         List<AuditLogEntry> rows = jdbc.query("SELECT * FROM audit_logs WHERE " + where.sql
                 + " ORDER BY occurred_at DESC LIMIT ? OFFSET ?", AUDIT_ROW, where.args(size, (long) page * size));
         return page(rows, page, size, total);
+    }
+
+    @Override
+    public Optional<AuditLogEntry> auditLog(UUID id) {
+        if (id == null) return Optional.empty();
+        return jdbc.query("SELECT * FROM audit_logs WHERE id = ?", AUDIT_ROW, id).stream().findFirst();
+    }
+
+    @Override
+    public List<AuditLogEntry> recentActivities(int limit) {
+        return jdbc.query("SELECT * FROM audit_logs ORDER BY occurred_at DESC LIMIT ?", AUDIT_ROW,
+                Math.clamp(limit, 1, 100));
     }
 
     @Override

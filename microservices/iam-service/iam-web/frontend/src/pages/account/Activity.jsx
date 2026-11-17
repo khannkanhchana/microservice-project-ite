@@ -20,7 +20,7 @@ import { deviceLabel } from '../../lib/devices'
 
 const PAGE_SIZE = 20
 
-const STYLE = {
+export const ACTIVITY_STYLE = {
   PROFILE_UPDATED: [UserIcon, 'bg-primary-soft text-primary'],
   USERNAME_CHANGED: [UserIcon, 'bg-primary-soft text-primary'],
   EMAIL_CHANGED: [MailIcon, 'bg-warning-soft text-warning'],
@@ -35,12 +35,14 @@ const STYLE = {
   SESSION_REVOKED: [DevicesIcon, 'bg-surface-2 text-muted'],
   OTHER_SESSIONS_REVOKED: [DevicesIcon, 'bg-surface-2 text-muted'],
   ACCOUNT_DEACTIVATED: [PowerIcon, 'bg-danger-soft text-danger'],
+  DEACTIVATION_REQUESTED: [PowerIcon, 'bg-warning-soft text-warning'],
+  DEACTIVATION_CANCELLED: [PowerIcon, 'bg-surface-2 text-muted'],
 }
 
 const PROVIDERS = { google: 'Google', github: 'GitHub', facebook: 'Facebook', telegram: 'Telegram' }
 
 /** Localized title and detail line for one activity record. */
-function describe(t, item) {
+export function describeActivity(t, item) {
   const d = item.description
   switch (item.type) {
     case 'PROFILE_UPDATED':
@@ -99,8 +101,8 @@ export default function Activity() {
         ) : (
           <ol className="px-5 py-2">
             {items.map((item, index) => {
-              const [Icon, tone] = STYLE[item.type] || [ActivityIcon, 'bg-surface-2 text-muted']
-              const [title, detail] = describe(t, item)
+              const [Icon, tone] = ACTIVITY_STYLE[item.type] || [ActivityIcon, 'bg-surface-2 text-muted']
+              const [title, detail] = describeActivity(t, item)
               return (
                 <li key={item.id} className="relative flex gap-4 py-3">
                   {index < items.length - 1 && <span className="absolute left-[19px] top-14 bottom-0 w-px bg-line" aria-hidden="true" />}

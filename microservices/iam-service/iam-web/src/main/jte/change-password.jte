@@ -17,7 +17,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -43,7 +43,7 @@
             padding: 30px 20px;
             background: var(--bg);
             color: var(--text);
-            font-family: "DM Sans", "Noto Sans Khmer", sans-serif;
+            font-family: "Google Sans", system-ui, sans-serif;
             position: relative;
             overflow-x: hidden;
         }
@@ -461,11 +461,11 @@
 
             <div class="language-switch">
                 @if ("km".equals(lang))
-                    <a href="?lang=en">EN</a>
-                    <a href="?lang=km" class="active">ខ្មែរ</a>
+                    <a href="?lang=en"><img class="lang-flag" src="/images/english-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">EN</a>
+                    <a href="?lang=km" class="active"><img class="lang-flag" src="/images/khmer-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">ខ្មែរ</a>
                 @else
-                    <a href="?lang=en" class="active">EN</a>
-                    <a href="?lang=km">ខ្មែរ</a>
+                    <a href="?lang=en" class="active"><img class="lang-flag" src="/images/english-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">EN</a>
+                    <a href="?lang=km"><img class="lang-flag" src="/images/khmer-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">ខ្មែរ</a>
                 @endif
             </div>
 

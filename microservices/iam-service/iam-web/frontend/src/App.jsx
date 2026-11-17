@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import RequireAuth from './auth/RequireAuth'
 import AccountLayout from './components/AccountLayout'
@@ -12,6 +12,7 @@ import Activity from './pages/account/Activity'
 import Deactivate from './pages/account/Deactivate'
 import LinkedAccounts from './pages/account/LinkedAccounts'
 import LoginHistory from './pages/account/LoginHistory'
+import AccountOverview from './pages/account/Overview'
 import Profile from './pages/account/Profile'
 import Security from './pages/account/Security'
 import Sessions from './pages/account/Sessions'
@@ -45,7 +46,7 @@ export default function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<Navigate to="profile" replace />} />
+            <Route index element={<AccountOverview />} />
             <Route path="profile" element={<Profile />} />
             <Route path="security" element={<Security />} />
             <Route path="linked-accounts" element={<LinkedAccounts />} />
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="clients" element={guard('client:read', <AdminClients />)} />
             <Route path="login-monitor" element={guard('session:read', <AdminLoginMonitor />)} />
             <Route path="audit-logs" element={guard('audit:read', <AdminAuditLogs />)} />
+            <Route path="audit-logs/:id" element={guard('audit:read', <AdminAuditLogs />)} />
             <Route path="settings" element={guard('settings:read', <AdminSettings />)} />
           </Route>
           <Route path="*" element={<NotFound />} />
