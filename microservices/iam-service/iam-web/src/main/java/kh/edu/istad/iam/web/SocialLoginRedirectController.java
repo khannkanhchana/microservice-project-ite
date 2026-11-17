@@ -124,7 +124,7 @@ public class SocialLoginRedirectController {
             requestCache.removeRequest(request, response);
             return "redirect:" + saved.getRedirectUrl();
         }
-        return "redirect:/account";
+        return "redirect:/me";
     }
 
     /** Social providers can be switched off by the authentication policy (Admin > Settings). */

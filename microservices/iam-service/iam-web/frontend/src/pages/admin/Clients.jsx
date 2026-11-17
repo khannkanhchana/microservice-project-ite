@@ -88,7 +88,7 @@ export default function Clients() {
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {c.grantTypes.map((g) => <Badge key={g}>{t(`admin.clients.grants.${g}`, { defaultValue: g })}</Badge>)}
-                    {c.scopes.map((s) => <code key={s} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted">{s}</code>)}
+                    {c.scopes.map((s) => <code key={s} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-muted">{s}</code>)}
                   </div>
                   <p className="mt-1.5 text-xs text-subtle">
                     {t('admin.clients.summary', { access: c.accessTokenMinutes, refresh: c.refreshTokenDays, authorizations: c.activeAuthorizations })}

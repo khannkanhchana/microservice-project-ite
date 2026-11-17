@@ -31,7 +31,7 @@ public class AccountSelfServiceService implements AccountSelfServiceUseCase {
     private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
     private static final Pattern PHONE = Pattern.compile("^\\+?[0-9 ()-]{6,20}$");
     private static final Set<String> PICTURE_TYPES = Set.of("image/png", "image/jpeg", "image/webp", "image/gif");
-    private static final int MAX_PICTURE_BYTES = 2 * 1024 * 1024;
+    private static final int MAX_PICTURE_BYTES = 10 * 1024 * 1024;
     private static final Duration LINK_TICKET_TTL = Duration.ofMinutes(5);
     private static final Duration RESET_TOKEN_TTL = Duration.ofMinutes(30);
 
@@ -317,7 +317,7 @@ public class AccountSelfServiceService implements AccountSelfServiceUseCase {
     @Transactional
     public String storePicture(UUID userUuid, String contentType, byte[] data, String publicBaseUrl, String actor) {
         if (data == null || data.length == 0) throw new IllegalArgumentException("Choose an image to upload.");
-        if (data.length > MAX_PICTURE_BYTES) throw new IllegalArgumentException("Profile pictures must be 2 MB or smaller.");
+        if (data.length > MAX_PICTURE_BYTES) throw new IllegalArgumentException("Profile pictures must be 10 MB or smaller.");
         String type = contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
         if (!PICTURE_TYPES.contains(type) || !looksLikeImage(data)) {
             throw new IllegalArgumentException("Profile pictures must be PNG, JPEG, WebP or GIF images.");

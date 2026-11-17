@@ -48,10 +48,10 @@ export default function AccountOverview() {
   const partError = ['sessions', 'identities', 'logins', 'activity'].map((k) => data[k].error).find(Boolean)
 
   const checks = [
-    { ok: user.hasPassword, label: t('overview.checkPassword'), to: '/account/security' },
-    { ok: user.emailVerified, label: t('overview.checkEmail'), to: '/account/profile' },
-    { ok: Boolean(user.pictureUrl), label: t('overview.checkPicture'), to: '/account/profile' },
-    { ok: identities.length > 0, label: t('overview.checkLinked'), to: '/account/linked-accounts' },
+    { ok: user.hasPassword, label: t('overview.checkPassword'), to: '/me/security' },
+    { ok: user.emailVerified, label: t('overview.checkEmail'), to: '/me/profile' },
+    { ok: Boolean(user.pictureUrl), label: t('overview.checkPicture'), to: '/me/profile' },
+    { ok: identities.length > 0, label: t('overview.checkLinked'), to: '/me/linked-accounts' },
   ]
   const score = checks.filter((c) => c.ok).length
 
@@ -72,7 +72,7 @@ export default function AccountOverview() {
         {pendingDeactivation && (
           <Alert tone="warning" title={t('deactivate.pendingTitle')}>
             {t('deactivate.pendingBody', { date: formatDateTime(pendingDeactivation.scheduledFor, i18n.language) })}{' '}
-            <Link to="/account/deactivate" className="font-medium underline">{t('overview.manage')}</Link>
+            <Link to="/me/deactivate" className="font-medium underline">{t('overview.manage')}</Link>
           </Alert>
         )}
 
@@ -90,17 +90,17 @@ export default function AccountOverview() {
             <div className="text-sm sm:text-right">
               <p className="text-subtle">{t('profile.lastLogin')}</p>
               <p className="text-ink">{user.lastLoginAt ? formatDateTime(user.lastLoginAt, i18n.language) : t('common.never')}</p>
-              <Link to="/account/profile" className="mt-1 inline-block font-medium text-primary hover:underline">{t('overview.editProfile')}</Link>
+              <Link to="/me/profile" className="mt-1 inline-block font-medium text-primary hover:underline">{t('overview.editProfile')}</Link>
             </div>
           </div>
         </Card>
 
         {/* Key numbers */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Link to="/account/sessions" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.activeSessions')} value={sessions.length} icon={DevicesIcon} tone="primary" /></Link>
-          <Link to="/account/linked-accounts" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.linkedAccounts')} value={identities.length} icon={LinkIcon} /></Link>
-          <Link to="/account/login-history" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.failedSignIns')} value={failedCount} icon={AlertIcon} tone={failedCount > 0 ? 'danger' : 'success'} /></Link>
-          <Link to="/account/security" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.securityScore')} value={`${score}/${checks.length}`} icon={ShieldIcon} tone={score === checks.length ? 'success' : 'warning'} /></Link>
+          <Link to="/me/sessions" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.activeSessions')} value={sessions.length} icon={DevicesIcon} tone="primary" /></Link>
+          <Link to="/me/linked-accounts" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.linkedAccounts')} value={identities.length} icon={LinkIcon} /></Link>
+          <Link to="/me/login-history" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.failedSignIns')} value={failedCount} icon={AlertIcon} tone={failedCount > 0 ? 'danger' : 'success'} /></Link>
+          <Link to="/me/security" className="rounded-xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring"><StatTile label={t('overview.securityScore')} value={`${score}/${checks.length}`} icon={ShieldIcon} tone={score === checks.length ? 'success' : 'warning'} /></Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -125,7 +125,7 @@ export default function AccountOverview() {
           <Card
             title={t('overview.recentSignIns')}
             padded={false}
-            actions={<Link to="/account/login-history" className="text-sm font-medium text-primary hover:underline">{t('overview.viewAll')}</Link>}
+            actions={<Link to="/me/login-history" className="text-sm font-medium text-primary hover:underline">{t('overview.viewAll')}</Link>}
           >
             {logins.length === 0 ? (
               <EmptyState icon={<HistoryIcon />} title={t('overview.noSignIns')} />
@@ -155,7 +155,7 @@ export default function AccountOverview() {
         <Card
           title={t('overview.recentActivity')}
           padded={false}
-          actions={<Link to="/account/activity" className="text-sm font-medium text-primary hover:underline">{t('overview.viewAll')}</Link>}
+          actions={<Link to="/me/activity" className="text-sm font-medium text-primary hover:underline">{t('overview.viewAll')}</Link>}
         >
           {activity.length === 0 ? (
             <EmptyState icon={<ActivityIcon />} title={t('overview.noActivity')} />
@@ -181,9 +181,9 @@ export default function AccountOverview() {
         {/* Shortcuts */}
         <div className="grid gap-3 sm:grid-cols-3">
           {[
-            { to: '/account/profile', icon: UserIcon, label: 'nav.profile' },
-            { to: '/account/security', icon: KeyIcon, label: 'nav.security' },
-            { to: '/account/sessions', icon: DevicesIcon, label: 'nav.sessions' },
+            { to: '/me/profile', icon: UserIcon, label: 'nav.profile' },
+            { to: '/me/security', icon: KeyIcon, label: 'nav.security' },
+            { to: '/me/sessions', icon: DevicesIcon, label: 'nav.sessions' },
           ].map(({ to, icon: Icon, label }) => (
             <Link key={to} to={to} className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium text-ink transition-colors hover:border-primary hover:text-primary">
               <Icon className="size-4 text-subtle" />

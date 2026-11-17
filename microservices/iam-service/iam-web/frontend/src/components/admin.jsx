@@ -148,7 +148,7 @@ export function Tabs({ tabs, active, onChange }) {
         >
           {tab.label}
           {tab.count != null && (
-            <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] font-medium text-muted tabular-nums">{tab.count}</span>
+            <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-muted tabular-nums">{tab.count}</span>
           )}
         </button>
       ))}
@@ -272,7 +272,7 @@ export function LoginBars({ data, labels }) {
           </div>
         ))}
       </div>
-      <div className="mt-2 flex gap-2 text-[11px] text-subtle">
+      <div className="mt-2 flex gap-2 text-xs text-subtle">
         {data.map((day) => (
           <span key={day.date} className="flex-1 text-center tabular-nums">
             {day.date.slice(5)}

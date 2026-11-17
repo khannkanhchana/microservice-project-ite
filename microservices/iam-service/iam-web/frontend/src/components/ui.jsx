@@ -34,7 +34,7 @@ export const buttonVariants = cva(
         link: 'h-auto px-0 text-primary underline-offset-4 hover:underline',
       },
       size: {
-        sm: 'h-8 px-3 text-[13px] [&_svg:not([class*=size-])]:size-3.5',
+        sm: 'h-8 px-3 text-sm [&_svg:not([class*=size-])]:size-3.5',
         md: 'h-9 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
         lg: 'h-11 px-5 text-sm [&_svg:not([class*=size-])]:size-4',
         icon: 'size-9 [&_svg:not([class*=size-])]:size-4',
@@ -98,7 +98,7 @@ export function Card({ title, description, actions, children, className, padded 
           )}
         >
           <div className="min-w-0">
-            {title && <h2 className="text-[15px] font-semibold leading-6 text-ink">{title}</h2>}
+            {title && <h2 className="text-base font-semibold leading-6 text-ink">{title}</h2>}
             {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -211,7 +211,7 @@ export function Field({ label, hint, error, children, className }) {
       )}
       {children({ id, 'aria-describedby': describedBy, 'aria-invalid': error ? true : undefined })}
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-[13px] text-danger">
+        <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-sm text-danger">
           <CircleAlert aria-hidden="true" className="size-3.5 shrink-0" />
           {error}
         </p>

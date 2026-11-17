@@ -74,7 +74,7 @@ export function decodeJwt(token) {
 }
 
 /** Sends the browser to the IAM authorization endpoint. */
-export async function login({ returnTo = '/account', prompt } = {}) {
+export async function login({ returnTo = '/me', prompt } = {}) {
   const verifier = randomString(48)
   const state = randomString(16)
   const nonce = randomString(16)
@@ -131,7 +131,7 @@ export async function handleCallback(search) {
   }
   memoryTokens = tokens
   writeJson(sessionStorage, TOKEN_KEY, tokens)
-  return pending.returnTo || '/account'
+  return pending.returnTo || '/me'
 }
 
 /** IAM pages that are reached by full-page navigation (sign-in UI lives on the authorization server). */

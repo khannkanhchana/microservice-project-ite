@@ -9,13 +9,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#253c94">
     <title>${messages.get("register.title")} | ISTAD IAM</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/images/istad-logo.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&family=Google+Sans+Code:wght@400;500&display=swap" rel="stylesheet">
 
     @template.authStyles()
 </head>
@@ -26,7 +26,7 @@
     <!-- Brand panel -->
     <section class="brand-panel" aria-hidden="true">
         <div class="brand">
-            <img src="/favicon.svg" alt="">
+            <img src="/images/istad-logo.png" alt="ISTAD">
             <div>
                 <strong>ISTAD IAM</strong>
                 <small>${messages.get("login.brandTag")}</small>
@@ -62,15 +62,12 @@
     <!-- Register panel -->
     <section class="auth-panel">
         <nav class="top-bar" aria-label="${messages.get("common.language")}">
-            <div class="lang-switch">
-                <a href="?lang=en" class="${lang.equals("en") ? "active" : ""}" hreflang="en"><img class="lang-flag" src="/images/english-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">EN</a>
-                <a href="?lang=km" class="${lang.equals("km") ? "active" : ""}" hreflang="km"><img class="lang-flag" src="/images/khmer-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">ខ្មែរ</a>
-            </div>
+            @template.langSwitch(messages = messages, lang = lang)
         </nav>
 
         <div class="auth-content wide">
             <div class="mobile-brand">
-                <img src="/favicon.svg" alt="">
+                <img src="/images/istad-logo.png" alt="ISTAD">
                 <span>ISTAD IAM</span>
             </div>
 

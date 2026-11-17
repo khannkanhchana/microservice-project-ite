@@ -33,18 +33,18 @@ const ACCOUNT_NAV = [
   {
     group: 'nav.groupAccount',
     items: [
-      { to: '/account', end: true, label: 'nav.overview', icon: GridIcon },
-      { to: '/account/profile', label: 'nav.profile', icon: UserIcon },
-      { to: '/account/security', label: 'nav.security', icon: KeyIcon },
-      { to: '/account/linked-accounts', label: 'nav.linkedAccounts', icon: LinkIcon },
+      { to: '/me', end: true, label: 'nav.overview', icon: GridIcon },
+      { to: '/me/profile', label: 'nav.profile', icon: UserIcon },
+      { to: '/me/security', label: 'nav.security', icon: KeyIcon },
+      { to: '/me/linked-accounts', label: 'nav.linkedAccounts', icon: LinkIcon },
     ],
   },
   {
     group: 'nav.groupSecurity',
     items: [
-      { to: '/account/sessions', label: 'nav.sessions', icon: DevicesIcon },
-      { to: '/account/login-history', label: 'nav.loginHistory', icon: HistoryIcon },
-      { to: '/account/activity', label: 'nav.activity', icon: ActivityIcon },
+      { to: '/me/sessions', label: 'nav.sessions', icon: DevicesIcon },
+      { to: '/me/login-history', label: 'nav.loginHistory', icon: HistoryIcon },
+      { to: '/me/activity', label: 'nav.activity', icon: ActivityIcon },
     ],
   },
 ]
@@ -95,13 +95,11 @@ function useClickOutside(ref, onOutside, active) {
 function Brand() {
   const { t } = useTranslation()
   return (
-    <Link to="/account" className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring">
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-on-primary">
-        <ShieldIcon className="size-[18px]" />
-      </span>
+    <Link to="/me" className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring">
+      <img src="/images/istad-logo.png" alt="ISTAD" className="size-9 shrink-0 rounded-full object-contain" />
       <span className="leading-tight">
         <span className="block text-sm font-semibold tracking-tight text-ink">{t('app.name')}</span>
-        <span className="block text-[11px] text-subtle">{t('app.tagline')}</span>
+        <span className="block text-xs text-subtle">{t('app.tagline')}</span>
       </span>
     </Link>
   )
@@ -112,7 +110,7 @@ function RoleBadge({ admin }) {
   return (
     <span
       className={cx(
-        'inline-flex items-center rounded-md px-1.5 py-px text-[11px] font-medium ring-1 ring-inset',
+        'inline-flex items-center rounded-md px-1.5 py-px text-xs font-medium ring-1 ring-inset',
         admin ? 'bg-primary-soft text-primary ring-primary/20' : 'bg-surface-2 text-muted ring-line',
       )}
     >
@@ -131,7 +129,7 @@ function WorkspaceSwitch({ inAdmin, onNavigate }) {
     )
   return (
     <div className="flex gap-1 rounded-lg bg-surface-2 p-1">
-      <Link to="/account" onClick={onNavigate} className={tab(!inAdmin)} aria-current={!inAdmin ? 'page' : undefined}>
+      <Link to="/me" onClick={onNavigate} className={tab(!inAdmin)} aria-current={!inAdmin ? 'page' : undefined}>
         <UserIcon className="size-3.5 shrink-0" />
         {t('nav.workspaceAccount')}
       </Link>
@@ -200,7 +198,7 @@ function Sidebar({ onNavigate }) {
           {!inAdmin && (
             <div className="border-t border-line pt-4">
               <NavLink
-                to="/account/deactivate"
+                to="/me/deactivate"
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cx(
@@ -280,11 +278,11 @@ function UserMenu() {
             </div>
           </div>
           <div className="my-1 h-px bg-line" />
-          <Link role="menuitem" to="/account/profile" className={item}>
+          <Link role="menuitem" to="/me/profile" className={item}>
             <UserIcon className="size-4 text-subtle" />
             {t('nav.profile')}
           </Link>
-          <Link role="menuitem" to="/account/security" className={item}>
+          <Link role="menuitem" to="/me/security" className={item}>
             <KeyIcon className="size-4 text-subtle" />
             {t('nav.security')}
           </Link>
@@ -341,7 +339,7 @@ export default function AccountLayout() {
 
       <div className="lg:pl-72">
         <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur supports-[backdrop-filter]:bg-bg/75">
-          <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-5 lg:px-6">
             <div className="flex min-w-0 items-center gap-2">
               <button
                 type="button"
@@ -352,7 +350,7 @@ export default function AccountLayout() {
                 <MenuIcon className="size-5" />
               </button>
               <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
-                <Link to={inAdmin ? '/admin' : '/account'} className="hidden shrink-0 whitespace-nowrap text-muted hover:text-ink sm:inline">
+                <Link to={inAdmin ? '/admin' : '/me'} className="hidden shrink-0 whitespace-nowrap text-muted hover:text-ink sm:inline">
                   {t(inAdmin ? 'nav.workspaceAdmin' : 'nav.workspaceAccount')}
                 </Link>
                 {page && (
@@ -370,7 +368,7 @@ export default function AccountLayout() {
           </div>
         </header>
 
-        <main className={cx('mx-auto px-4 py-8 sm:px-6 lg:px-8 lg:py-10', inAdmin ? 'max-w-7xl' : 'max-w-5xl')}>
+        <main className="w-full px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
           <Outlet />
         </main>
       </div>

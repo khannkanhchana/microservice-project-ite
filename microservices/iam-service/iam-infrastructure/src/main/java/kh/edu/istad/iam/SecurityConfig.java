@@ -217,8 +217,8 @@ public class SecurityConfig {
                                 "/images/**", // social login logos used by the JTE /login and /register pages
                                 "/favicon.svg",
                                 "/callback",
-                                "/account",
-                                "/account/**",
+                                "/me",
+                                "/me/**",
                                 "/admin",
                                 "/admin/**",
                                 "/forgot-password",

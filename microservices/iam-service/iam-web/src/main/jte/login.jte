@@ -11,13 +11,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#253c94">
     <title>${messages.get("login.title")} | ISTAD IAM</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/images/istad-logo.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&family=Google+Sans+Code:wght@400;500&display=swap" rel="stylesheet">
 
     @template.authStyles()
 </head>
@@ -28,7 +28,7 @@
     <!-- Brand panel -->
     <section class="brand-panel" aria-hidden="true">
         <div class="brand">
-            <img src="/favicon.svg" alt="">
+            <img src="/images/istad-logo.png" alt="ISTAD">
             <div>
                 <strong>ISTAD IAM</strong>
                 <small>${messages.get("login.brandTag")}</small>
@@ -63,15 +63,12 @@
     <!-- Auth panel -->
     <section class="auth-panel">
         <nav class="top-bar" aria-label="${messages.get("common.language")}">
-            <div class="lang-switch">
-                <a href="?lang=en" class="${lang.equals("en") ? "active" : ""}" hreflang="en"><img class="lang-flag" src="/images/english-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">EN</a>
-                <a href="?lang=km" class="${lang.equals("km") ? "active" : ""}" hreflang="km"><img class="lang-flag" src="/images/khmer-flag.png" alt="" width="18" height="12" style="width:18px;height:12px;object-fit:cover;border-radius:2px;vertical-align:-1px;margin-right:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)">ខ្មែរ</a>
-            </div>
+            @template.langSwitch(messages = messages, lang = lang)
         </nav>
 
         <div class="auth-content">
             <div class="mobile-brand">
-                <img src="/favicon.svg" alt="">
+                <img src="/images/istad-logo.png" alt="ISTAD">
                 <span>ISTAD IAM</span>
             </div>
 
@@ -92,19 +89,6 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>
                     <span>${messages.get("login.registered")}</span>
                 </div>
-            @endif
-
-            @if (!socialProviders.isEmpty())
-                <div class="social-grid ${socialProviders.size() == 1 ? "single" : ""}">
-                    @for (String provider : socialProviders)
-                        <a class="social-btn" data-provider="${provider}" href="/login/social/${provider}">
-                            <img class="logo-${provider}" src="/images/${provider}.png" alt="" width="20" height="20">
-                            <span>${messages.get("login." + provider)}</span>
-                        </a>
-                    @endfor
-                </div>
-
-                <div class="divider">${messages.get("login.or")}</div>
             @endif
 
             <form id="loginForm" method="post" action="/login" class="${hasError ? "has-error" : ""}" novalidate>
@@ -143,6 +127,19 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                 </button>
             </form>
+
+            @if (!socialProviders.isEmpty())
+                <div class="divider">${messages.get("login.or")}</div>
+
+                <div class="social-grid ${socialProviders.size() == 1 ? "single" : ""}">
+                    @for (String provider : socialProviders)
+                        <a class="social-btn" data-provider="${provider}" href="/login/social/${provider}">
+                            <img class="logo-${provider}" src="/images/${provider}.png" alt="" width="20" height="20">
+                            <span>${messages.get("login." + provider)}</span>
+                        </a>
+                    @endfor
+                </div>
+            @endif
 
             <p class="register">
                 ${messages.get("login.noAccount")}

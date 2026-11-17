@@ -39,7 +39,7 @@ export default function LinkedAccounts() {
     setLinking(provider)
     setError(null)
     try {
-      const returnUrl = `${window.location.origin}${basePath}/account/linked-accounts`
+      const returnUrl = `${window.location.origin}${basePath}/me/linked-accounts`
       const { authorizationUrl } = await accountApi.startLink(provider, returnUrl)
       window.location.assign(authorizationUrl)
     } catch (err) {

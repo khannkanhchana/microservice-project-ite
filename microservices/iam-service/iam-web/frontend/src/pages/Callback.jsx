@@ -23,8 +23,8 @@ export default function Callback() {
         const me = await reloadUser()
         // A plain sign-in (no deep link to return to) lands on an overview: the admin console overview for
         // users who may see it, the account overview for everyone else.
-        const deepLink = returnTo.startsWith('/') && returnTo !== '/account' && returnTo !== '/'
-        const home = hasPermission(me, 'dashboard:read') ? '/admin' : '/account'
+        const deepLink = returnTo.startsWith('/') && returnTo !== '/me' && returnTo !== '/'
+        const home = hasPermission(me, 'dashboard:read') ? '/admin' : '/me'
         navigate(deepLink ? returnTo : home, { replace: true })
       })
       .catch((err) => setError(err.message))
@@ -38,7 +38,7 @@ export default function Callback() {
             <Alert tone="danger" title={t('callback.failed')}>
               {error}
             </Alert>
-            <Button className="mt-6 w-full" onClick={() => login({ returnTo: '/account' })}>
+            <Button className="mt-6 w-full" onClick={() => login({ returnTo: '/me' })}>
               {t('callback.tryAgain')}
             </Button>
           </>

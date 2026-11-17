@@ -2,43 +2,45 @@
 
 /* Semantic color tokens, switched for dark mode. Components use bg-surface, text-muted, etc. */
 :root {
-  /* Neutral zinc surfaces with a single indigo-blue accent. */
-  --c-bg: #fafafa;
+  /* ISTAD brand: navy blue primary, red for danger, gold accent — taken from the ISTAD logo. */
+  --c-bg: #f4f6fb;
   --c-surface: #ffffff;
-  --c-surface-2: #f4f4f5;
-  --c-border: #e4e4e7;
-  --c-text: #09090b;
-  --c-muted: #52525b;
-  --c-subtle: #71717a;
-  --c-primary: #3b5bdb;
-  --c-primary-hover: #304bc0;
-  --c-primary-soft: #eef1fd;
+  --c-surface-2: #eef1f8;
+  --c-border: #dde3ef;
+  --c-text: #0f1733;
+  --c-muted: #44506e;
+  --c-subtle: #64708d;
+  --c-primary: #253c94;
+  --c-primary-hover: #1c2f7a;
+  --c-primary-soft: #e8ecf8;
   --c-on-primary: #ffffff;
-  --c-danger: #dc2626;
-  --c-danger-hover: #b91c1c;
-  --c-danger-soft: #fef2f2;
+  --c-accent: #f2b42b;
+  --c-danger: #d71f27;
+  --c-danger-hover: #b5161d;
+  --c-danger-soft: #fdeeee;
   --c-success: #15803d;
   --c-success-soft: #f0fdf4;
   --c-warning: #b45309;
   --c-warning-soft: #fffbeb;
-  --c-ring: rgb(59 91 219 / 0.3);
+  --c-ring: rgb(37 60 148 / 0.3);
   --c-overlay: rgb(9 9 11 / 0.45);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --c-bg: #09090b;
-    --c-surface: #111114;
-    --c-surface-2: #1c1c21;
-    --c-border: #27272a;
-    --c-text: #fafafa;
-    --c-muted: #a1a1aa;
-    --c-subtle: #71717a;
-    --c-primary: #6d8cf5;
-    --c-primary-hover: #8aa3f7;
-    --c-primary-soft: #19203f;
-    --c-on-primary: #0b0b0f;
+    --c-bg: #0a0f1f;
+    --c-surface: #10172b;
+    --c-surface-2: #18213a;
+    --c-border: #263152;
+    --c-text: #f3f5fb;
+    --c-muted: #b1b9d0;
+    --c-subtle: #8791ad;
+    --c-primary: #8ea2ef;
+    --c-primary-hover: #a9b9f4;
+    --c-primary-soft: #1a2350;
+    --c-on-primary: #0a0f1f;
+    --c-accent: #f5c451;
     --c-danger: #f87171;
     --c-danger-hover: #fca5a5;
     --c-danger-soft: #2a1215;
@@ -46,7 +48,7 @@
     --c-success-soft: #0f2618;
     --c-warning: #fbbf24;
     --c-warning-soft: #2a1f0a;
-    --c-ring: rgb(109 140 245 / 0.4);
+    --c-ring: rgb(142 162 239 / 0.4);
     --c-overlay: rgb(0 0 0 / 0.6);
     color-scheme: dark;
   }
@@ -73,8 +75,21 @@
   --color-warning-soft: var(--c-warning-soft);
   --color-ring: var(--c-ring);
   --color-overlay: var(--c-overlay);
-  --font-sans: 'Google Sans', ui-sans-serif, system-ui, sans-serif;
+  --color-accent: var(--c-accent);
+  --font-sans: 'Google Sans', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Google Sans Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Larger, easier-to-read type scale (Tailwind defaults are 12 / 14 / 16px). */
+@theme {
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.5rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.65rem;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.75rem;
 }
 
 html {
@@ -86,6 +101,7 @@ html {
 
 /* Khmer script needs a little more line height. */
 html[lang='km'] {
+  font-family: 'Kantumruy Pro', 'Google Sans', ui-sans-serif, system-ui, sans-serif;
   line-height: 1.7;
 }
 

@@ -58,12 +58,12 @@ export default function Landing() {
             </div>
           )}
           {status === 'authenticated' ? (
-            <Button size="lg" className="w-full" onClick={() => navigate('/account')}>
+            <Button size="lg" className="w-full" onClick={() => navigate('/me')}>
               {t('landing.continue')}
             </Button>
           ) : (
             <div className="flex flex-col gap-3">
-              <Button size="lg" className="w-full" onClick={() => login({ returnTo: '/account' })}>
+              <Button size="lg" className="w-full" onClick={() => login({ returnTo: '/me' })}>
                 {t('landing.signIn')}
               </Button>
               {/* Registration is the IAM page /register (same server as /login), not a React route. */}

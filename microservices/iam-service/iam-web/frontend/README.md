@@ -14,14 +14,14 @@ docker compose -f deployment/redis/docker-compose.yaml up -d
 # 2. Build + start iam-service (Gradle runs `npm install` + `npm run build` for this app)
 cd microservices/iam-service
 ./gradlew :iam-main:bootRun
-# 3. Open http://localhost:9000/login  → after signing in you land on http://localhost:9000/account
+# 3. Open http://localhost:9000/login  → after signing in you land on http://localhost:9000/me
 ```
 
 | URL | What |
 |---|---|
 | `http://localhost:9000/login` | The one sign-in page (JTE, authorization server) |
 | `http://localhost:9000/` | React app home |
-| `http://localhost:9000/account/...` | Profile, Security, Linked accounts, Sessions, Login history, Activity, Deactivate |
+| `http://localhost:9000/me/...` | Profile, Security, Linked accounts, Sessions, Login history, Activity, Deactivate |
 
 `npm run build` writes `index.html` + `assets/` to `iam-web/src/main/resources/static`, and `SpaController`
 forwards the React routes to that `index.html`. Skip the frontend build with `-PskipFrontend`.
@@ -43,14 +43,14 @@ expires, the app re-authorizes, which completes without a prompt while the IAM b
 
 | Page | Route | API |
 |---|---|---|
-| Profile: name, username, email, phone, picture | `/account/profile` | `GET/PATCH /api/me`, `POST/DELETE /api/me/picture` |
-| Security & password: change, or reset by email | `/account/security`, `/forgot-password`, `/reset-password` | `PUT /api/me/password`, `POST /api/auth/password/{forgot,reset}` |
-| Linked accounts: Google, GitHub, Facebook, Telegram | `/account/linked-accounts` | `GET /api/me/identities`, `POST /api/me/identities/link`, `DELETE /api/me/identities/{id}` |
-| Active sessions: device, browser, IP, location, last activity | `/account/sessions` | `GET /api/me/sessions` |
-| Session management: end one device, others, or everywhere | `/account/sessions` | `DELETE /api/me/sessions/{id\|current}`, `DELETE /api/me/sessions?scope=others\|all` |
-| Login history: successful and failed attempts | `/account/login-history` | `GET /api/me/login-history?status=all\|success\|failed` |
-| Account activity | `/account/activity` | `GET /api/me/activity` |
-| Account deactivation | `/account/deactivate` | `POST /api/me/deactivation` |
+| Profile: name, username, email, phone, picture | `/me/profile` | `GET/PATCH /api/me`, `POST/DELETE /api/me/picture` |
+| Security & password: change, or reset by email | `/me/security`, `/forgot-password`, `/reset-password` | `PUT /api/me/password`, `POST /api/auth/password/{forgot,reset}` |
+| Linked accounts: Google, GitHub, Facebook, Telegram | `/me/linked-accounts` | `GET /api/me/identities`, `POST /api/me/identities/link`, `DELETE /api/me/identities/{id}` |
+| Active sessions: device, browser, IP, location, last activity | `/me/sessions` | `GET /api/me/sessions` |
+| Session management: end one device, others, or everywhere | `/me/sessions` | `DELETE /api/me/sessions/{id\|current}`, `DELETE /api/me/sessions?scope=others\|all` |
+| Login history: successful and failed attempts | `/me/login-history` | `GET /api/me/login-history?status=all\|success\|failed` |
+| Account activity | `/me/activity` | `GET /api/me/activity` |
+| Account deactivation | `/me/deactivate` | `POST /api/me/deactivation` |
 
 Notes:
 - **Sessions are stored in Redis.** The IAM browser login (HTTP session) is kept by Spring Session under

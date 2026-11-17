@@ -43,7 +43,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     ResponseEntity<ProblemDetail> tooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException exception) {
-        return problem(HttpStatus.CONTENT_TOO_LARGE, "File too large", "Profile pictures must be 2 MB or smaller.");
+        return problem(HttpStatus.CONTENT_TOO_LARGE, "File too large", "Profile pictures must be 10 MB or smaller.");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

@@ -236,7 +236,7 @@ public class AccountController {
                                                      @RequestBody(required = false) java.util.Map<String, String> body,
                                                      Authentication auth) {
         String returnUrl = body == null ? null : body.get("returnUrl");
-        if (returnUrl == null || returnUrl.isBlank()) returnUrl = webBaseUrl + "/account/linked-accounts";
+        if (returnUrl == null || returnUrl.isBlank()) returnUrl = webBaseUrl + "/me/linked-accounts";
         return startLinkFlow(provider, returnUrl, auth);
     }
 
@@ -258,7 +258,7 @@ public class AccountController {
             throws IOException {
         LinkTicket link = service().consumeLinkTicket(ticket).orElse(null);
         if (link == null) {
-            response.sendRedirect(webBaseUrl + "/account/linked-accounts?linkError="
+            response.sendRedirect(webBaseUrl + "/me/linked-accounts?linkError="
                     + java.net.URLEncoder.encode("The link request expired. Please try again.",
                     java.nio.charset.StandardCharsets.UTF_8));
             return;

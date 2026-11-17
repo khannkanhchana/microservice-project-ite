@@ -62,7 +62,7 @@ public class AccountLoginHandlers {
 
     public AuthenticationSuccessHandler successHandler() {
         SavedRequestAwareAuthenticationSuccessHandler delegate = new SavedRequestAwareAuthenticationSuccessHandler();
-        delegate.setDefaultTargetUrl("/account"); // the iam-web React app served by this service
+        delegate.setDefaultTargetUrl("/me"); // the iam-web React app served by this service
         return (request, response, authentication) -> {
             String returnUrl = onSuccess(request, authentication);
             if (returnUrl == null) returnUrl = handBack(request, authentication, null);

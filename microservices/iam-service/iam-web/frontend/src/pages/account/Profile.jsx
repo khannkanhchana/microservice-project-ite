@@ -7,7 +7,7 @@ import { Alert, Avatar, Badge, Button, Card, Field, Input, PageHeader, Select, u
 import { CameraIcon } from '../../components/icons'
 import { errorMessage, formatDate, formatDateTime } from '../../lib/format'
 
-const MAX_PICTURE_BYTES = 2 * 1024 * 1024
+const MAX_PICTURE_BYTES = 10 * 1024 * 1024
 const PICTURE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
 
 const toForm = (user) => ({
