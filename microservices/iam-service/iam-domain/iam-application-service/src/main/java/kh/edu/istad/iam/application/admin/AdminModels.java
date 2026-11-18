@@ -80,7 +80,9 @@ public final class AdminModels {
     public record ClientCommand(String clientId, String clientName, List<String> authenticationMethods,
                                 List<String> grantTypes, List<String> redirectUris, List<String> postLogoutRedirectUris,
                                 List<String> scopes, Boolean requireProofKey, Boolean requireConsent,
-                                Integer accessTokenMinutes, Integer refreshTokenDays, Boolean reuseRefreshTokens) {
+                                Integer accessTokenMinutes, Integer refreshTokenDays, Boolean reuseRefreshTokens,
+                                String clientSecret) {
+        /** {@code clientSecret}: optional secret generated in the console; when null the server generates one. */
         public ClientCommand {
             authenticationMethods = authenticationMethods == null ? List.of() : List.copyOf(authenticationMethods);
             grantTypes = grantTypes == null ? List.of() : List.copyOf(grantTypes);

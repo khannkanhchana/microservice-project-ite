@@ -41,7 +41,8 @@ public class ClientAdminService implements ClientAdminUseCase {
     public static final List<String> GRANT_TYPES = List.of("authorization_code", "refresh_token", "client_credentials");
     public static final List<String> AUTH_METHODS = List.of("client_secret_basic", "client_secret_post", "none");
     private static final Pattern CLIENT_ID = Pattern.compile("^[A-Za-z0-9._-]{3,100}$");
-    private static final Pattern SCOPE = Pattern.compile("^[A-Za-z0-9:._-]{1,100}$");
+    private static final Pattern SECRET = Pattern.compile("^[A-Za-z0-9_-]{32,200}$");
+    private static final Pattern SCOPE =Pattern.compile("^[A-Za-z0-9:._-]{1,100}$");
 
     private final RegisteredClientRepository clients;
     private final JdbcTemplate jdbc;
@@ -210,6 +211,15 @@ public class ClientAdminService implements ClientAdminUseCase {
         if (isPublic) {
             builder.clientSecret(null);
             return null;
+        }
+        // A secret generated in the console (Generate button) replaces the current one; it is still stored only as a hash.
+        String requested = c.clientSecret() == null || c.clientSecret().isBlank() ? null : c.clientSecret().trim();
+        if (requested != null) {
+            if (!SECRET.matcher(requested).matches()) {
+                throw new IllegalArgumentException("Client secret must be 32-200 characters: letters, digits, '-' or '_'.");
+            }
+            builder.clientSecret(encoder.encode(requested));
+            return requested;
         }
         boolean hadSecret = existing != null && existing.getClientSecret() != null;
         if (hadSecret) return null;

@@ -101,7 +101,8 @@ public class ClientAdminController {
                     requireConsent != null ? requireConsent : c.requireConsent(),
                     accessTokenMinutes != null ? accessTokenMinutes : (int) c.accessTokenMinutes(),
                     refreshTokenDays != null ? refreshTokenDays : (int) c.refreshTokenDays(),
-                    reuseRefreshTokens != null ? reuseRefreshTokens : c.reuseRefreshTokens());
+                    reuseRefreshTokens != null ? reuseRefreshTokens : c.reuseRefreshTokens(),
+                    null);
         }
     }
 }
